@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   root: 'src',
-  base: '/retirement-simulator/',
+  base: process.env.NETLIFY ? '/' : '/retirement-simulator/',
   build: {
     outDir: '../dist',
     emptyOutDir: true,
