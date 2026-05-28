@@ -2227,7 +2227,7 @@ const PROFILE_STORAGE_KEY = 'retirement-simulator-profile-v1';
 
 function saveProfileToStorage() {
   const textarea = document.getElementById('yamlSettings');
-  if (!textarea?.value) return;
+  if (textarea == null) return;
   try { window.localStorage.setItem(PROFILE_STORAGE_KEY, textarea.value); } catch {}
 }
 
@@ -2238,7 +2238,11 @@ function loadProfileFromStorage() {
     const textarea = document.getElementById('yamlSettings');
     if (!textarea) return false;
     textarea.value = saved;
-    applyYamlSettings();
+    const ok = applyYamlSettings();
+    if (!ok) {
+      try { window.localStorage.removeItem(PROFILE_STORAGE_KEY); } catch {}
+      return false;
+    }
     return true;
   } catch {
     return false;
@@ -2554,7 +2558,7 @@ function syncYamlFromCfg(message = '') {
 
 function applyYamlSettings() {
   const textarea = document.getElementById('yamlSettings');
-  if (!textarea) return;
+  if (!textarea) return false;
   try {
     if (!window.jsyaml?.load) {
       throw new Error('YAML parser unavailable');
@@ -2568,8 +2572,10 @@ function applyYamlSettings() {
     scheduleRender();
     setYamlStatus('Applied YAML', 'ok');
     saveProfileToStorage();
+    return true;
   } catch (err) {
     setYamlStatus(err?.message ?? String(err), 'error');
+    return false;
   }
 }
 
