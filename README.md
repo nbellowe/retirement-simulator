@@ -24,6 +24,14 @@ Then drag `profile.yaml` onto the page or use **Load file** in the YAML Settings
 - **Intro guide** can build a starter profile from stats or load the fictional sample
 - Your profile is saved automatically in `localStorage` between sessions
 
+## Visualizations
+
+- Portfolio trajectory percentile bands
+- Retirement feasibility heatmap by retirement age and spending level
+- Historical cohort replay using actual historical return sequences
+- Guardrail lifestyle variability and cut-year summaries
+- Income vs. spending, final portfolio distribution, and scenario comparison
+
 ## Sample profile
 
 `sample-profile.yaml` contains a fictional reference profile (Alex & Jordan).
