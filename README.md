@@ -7,20 +7,31 @@ A self-contained Monte Carlo retirement simulator that runs entirely in your bro
 
 ## Usage
 
-1. Generate a starter profile with the `monarch-money-tools` CLI:
+1. Open the simulator and use **Intro guide** to choose a starting path.
+2. Either upload an existing YAML profile, build a starter profile from core household stats, or load the fictional sample profile.
+3. Tweak settings interactively; use **Download** to save changes back to `profile.yaml`.
+
+If you already use the `monarch-money-tools` CLI, you can generate a starter profile first:
    ```bash
    monarch init-profile
    ```
-2. Edit `profile.yaml` with your numbers.
-3. Open the simulator and drag `profile.yaml` onto the page (or use **Load file**).
-4. Tweak settings interactively; use **Download** to save changes back to `profile.yaml`.
+Then drag `profile.yaml` onto the page or use **Load file** in the YAML Settings panel.
 
 ## Profile loading
 
 - **Drag-and-drop** a `profile.yaml` anywhere on the page
 - **Load file** button in the YAML Settings panel
 - **Paste / edit** YAML directly in the YAML Settings panel and click **Apply YAML**
+- **Intro guide** can build a starter profile from stats or load the fictional sample
 - Your profile is saved automatically in `localStorage` between sessions
+
+## Visualizations
+
+- Portfolio trajectory percentile bands
+- Retirement feasibility heatmap by retirement age and spending level
+- Historical cohort replay using actual historical return sequences
+- Guardrail lifestyle variability and cut-year summaries
+- Income vs. spending, final portfolio distribution, and scenario comparison
 
 ## Sample profile
 
