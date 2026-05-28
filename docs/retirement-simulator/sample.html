@@ -1079,11 +1079,6 @@
           <button type="button" class="yaml-btn" id="resetYaml">Reset</button>
           <button type="button" class="yaml-btn" id="copyYaml">Copy</button>
         </div>
-        <div class="yaml-actions">
-          <input type="file" id="profileFileInput" accept=".yaml,.yml" style="display:none" aria-hidden="true">
-          <button type="button" class="yaml-btn" id="loadProfile">Load file</button>
-          <button type="button" class="yaml-btn" id="downloadProfile">Download</button>
-        </div>
         <div class="yaml-status" id="yamlStatus" aria-live="polite"></div>
       </div>
     </div>
@@ -1998,8 +1993,9 @@ const FALLBACK_DEFAULT = {
   spendingFloor: 0.75,
   spendingCeiling: 1.20,
 };
-const DEFAULT = { ...FALLBACK_DEFAULT };
-const MONARCH_META = {};
+const RAW_DEFAULT = /* __MONARCH_DEFAULT__ */ {"person1Name": "Alex", "person2Name": "Jordan", "hasSpouse": true, "nathanAge": 35, "tanyaAge": 33, "retireNathanAge": 52, "retireTanyaAge": 50, "portfolioTotal": 850000.0, "nathanSalaryBase": 185000.0, "tanyaSalaryBase": 140000.0, "nathanRsuAnnual": 60000.0, "tanyaRsuAnnual": 40000.0, "rsuVestingYears": 4, "incomeGrowthReal": 0.02, "effectiveIncomeTax": 0.3, "baseSpending": 130000.0, "spendingGrowthReal": 0.005, "retirementSpendingFraction": 0.8, "healthcareAnnual": 20000.0, "medicareAge": 65, "numKids": 2, "firstKidYear": 2, "childcareAnnual": 30000.0, "k12Annual": 8000.0, "collegeContribution": 75000.0, "upgradeHouse": true, "upgradeYear": 3, "upgradeAdditionalCost": 500000.0, "ssNathanAnnual": 28000.0, "ssTanyaAnnual": 22000.0, "ssClaimAge": 67, "ssReductionFactor": 0.85, "equityReturnNominal": 0.09, "equityStd": 0.17, "bondReturnNominal": 0.04, "inflation": 0.03, "equityFractionWorking": 0.85, "equityFractionRetired": 0.6, "simulationMethod": "monte_carlo", "withdrawalStrategy": "guardrails", "withdrawalRate": 0.04, "swr": 0.04, "years": 70, "mcRuns": 500, "upperGuardrail": 0.05, "lowerGuardrail": 0.03, "guardrailCut": 0.1, "dynamicSpendingFloor": -0.025, "dynamicSpendingCeiling": 0.05, "gkCapitalPreservation": 1.2, "gkProsperity": 0.8, "gkAdjustment": 0.1, "gkSunsetYears": 15, "spendingFloor": 0.75, "spendingCeiling": 1.2};
+const DEFAULT = { ...FALLBACK_DEFAULT, ...RAW_DEFAULT };
+const MONARCH_META = /* __MONARCH_META__ */ {"person1Name": "Alex", "person2Name": "Jordan", "hasSpouse": true, "person1CurrentAge": 35, "person2CurrentAge": 33};
 
 let cfg = { ...DEFAULT };
 
@@ -4176,12 +4172,11 @@ function syncYamlFromCfg(message = '') {
   });
   yamlDirty = false;
   setYamlStatus(message, message ? 'ok' : '');
-  saveProfileToStorage();
 }
 
 function applyYamlSettings() {
   const textarea = document.getElementById('yamlSettings');
-  if (!textarea) return false;
+  if (!textarea) return;
   try {
     if (!window.jsyaml?.load) {
       throw new Error('YAML parser unavailable');
@@ -4194,11 +4189,8 @@ function applyYamlSettings() {
     updateScenarioButtonStates();
     scheduleRender();
     setYamlStatus('Applied YAML', 'ok');
-    saveProfileToStorage();
-    return true;
   } catch (err) {
     setYamlStatus(err?.message ?? String(err), 'error');
-    return false;
   }
 }
 
@@ -4230,18 +4222,6 @@ function bindYamlEditor() {
   document.getElementById('copyYaml')?.addEventListener('click', () => {
     copyYamlSettings();
   });
-  document.getElementById('loadProfile')?.addEventListener('click', () => {
-    document.getElementById('profileFileInput')?.click();
-  });
-  document.getElementById('profileFileInput')?.addEventListener('change', (e) => {
-    const file = e.target?.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => loadProfileFromText(String(ev.target?.result ?? ''));
-    reader.readAsText(file);
-    e.target.value = '';
-  });
-  document.getElementById('downloadProfile')?.addEventListener('click', downloadProfile);
 }
 
 function bindInputs() {
