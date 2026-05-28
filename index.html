@@ -3073,8 +3073,7 @@ function setOnboardingVisible(visible, persistDismissal = false) {
   }
 }
 
-function maybeShowOnboarding(profileWasLoaded) {
-  if (profileWasLoaded) return;
+function maybeShowOnboarding() {
   let dismissed = false;
   try {
     dismissed = window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === '1';
@@ -3881,7 +3880,7 @@ document.addEventListener('DOMContentLoaded', () => {
     syncUIFromCfg();
     scheduleRender();
   }
-  maybeShowOnboarding(profileWasLoaded);
+  maybeShowOnboarding();
 });
 </script>
 </body>
