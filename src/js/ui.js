@@ -851,4 +851,5 @@ export {
   bindSidebarToggle, bindYamlEditor, bindInputs, bindDragDrop,
   syncUIFromCfg, applyTooltips, applyMetaDefaults,
   loadProfileFromStorage, syncYamlFromCfg,
+  normalizeConfigBounds, applyYamlSettings, setSidebarCollapsed,
 };

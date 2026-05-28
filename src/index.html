@@ -14,6 +14,9 @@
     <div class="header-sub" id="header-sub">Person 1 · Real (inflation-adjusted) dollars</div>
   </div>
   <div class="header-actions">
+    <button type="button" class="sidebar-toggle guide-toggle" id="open-onboarding">
+      Intro guide
+    </button>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-controls="sidebar" aria-expanded="true">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
         <rect x="2" y="3" width="12" height="10" rx="2"/>
@@ -612,6 +615,232 @@
 <div class="computing" id="computing">
   <div class="spinner"></div>
   <span>Simulating…</span>
+</div>
+
+<div class="onboarding-backdrop" id="onboarding" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" aria-hidden="true">
+  <section class="onboarding-modal">
+    <div class="onboarding-header">
+      <div>
+        <div class="onboarding-eyebrow">Intro guide</div>
+        <h1 class="onboarding-title" id="onboarding-title">Build a retirement profile, then test the levers.</h1>
+        <p class="onboarding-copy">
+          Load an existing YAML profile, start from a fictional sample, or create a usable starter profile from a few household stats. Everything runs locally in this browser.
+        </p>
+      </div>
+      <button type="button" class="icon-btn" id="onboarding-close" aria-label="Close intro guide">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 4l8 8M12 4l-8 8"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="onboarding-body">
+      <div class="onboarding-tabs" role="tablist" aria-label="Intro guide sections">
+        <button type="button" class="onboarding-tab active" id="tab-start" role="tab" aria-selected="true" aria-controls="panel-start" data-onboarding-tab="start">Start</button>
+        <button type="button" class="onboarding-tab" id="tab-build" role="tab" aria-selected="false" aria-controls="panel-build" data-onboarding-tab="build">Build</button>
+        <button type="button" class="onboarding-tab" id="tab-tour" role="tab" aria-selected="false" aria-controls="panel-tour" data-onboarding-tab="tour">Tour</button>
+      </div>
+
+      <div class="onboarding-panels">
+        <section class="onboarding-panel active" id="panel-start" role="tabpanel" aria-labelledby="tab-start" data-onboarding-panel="start">
+          <h2>Choose how to begin</h2>
+          <p>A profile can come from a YAML file, the starter builder, or the sample household.</p>
+          <div class="intro-grid">
+            <div class="intro-card">
+              <div>
+                <strong>Load your own profile</strong>
+                <span>Use a <code>profile.yaml</code> generated elsewhere, edited by hand, or downloaded from this simulator.</span>
+              </div>
+              <button type="button" class="onboarding-btn primary" id="onboarding-load-profile">Load profile file</button>
+            </div>
+            <div class="intro-card">
+              <div>
+                <strong>Build from stats</strong>
+                <span>Enter rough age, income, portfolio, spending, household, and risk assumptions.</span>
+              </div>
+              <button type="button" class="onboarding-btn" data-jump-onboarding-tab="build">Open builder</button>
+            </div>
+            <div class="intro-card">
+              <div>
+                <strong>Try the sample</strong>
+                <span>Load a fictional dual-income household and explore charts without entering personal details.</span>
+              </div>
+              <button type="button" class="onboarding-btn" id="onboarding-load-sample">Use sample profile</button>
+            </div>
+          </div>
+          <div class="wizard-action-row">
+            <button type="button" class="onboarding-btn" id="onboarding-use-defaults">Use browser-safe defaults</button>
+            <button type="button" class="onboarding-btn" data-jump-onboarding-tab="tour">Show UI tour options</button>
+          </div>
+        </section>
+
+        <section class="onboarding-panel" id="panel-build" role="tabpanel" aria-labelledby="tab-build" data-onboarding-panel="build">
+          <h2>Build a starter profile</h2>
+          <p>Pick a shape, adjust the core stats, then generate editable YAML and rerun the simulator.</p>
+
+          <div class="quick-profile-grid" aria-label="Starter profile shapes">
+            <button type="button" class="profile-preset active" data-profile-preset="solo">
+              <strong>Solo starter</strong>
+              <span>One person, moderate income, early accumulation, no child costs.</span>
+            </button>
+            <button type="button" class="profile-preset" data-profile-preset="family">
+              <strong>Dual-income family</strong>
+              <span>Two earners, higher spending, two children, balanced market assumptions.</span>
+            </button>
+            <button type="button" class="profile-preset" data-profile-preset="near">
+              <strong>Near retirement</strong>
+              <span>Older household, larger portfolio, lower risk allocation, Social Security in view.</span>
+            </button>
+          </div>
+
+          <div class="wizard-grid">
+            <div class="wizard-field">
+              <label for="wizardPrimaryName">Primary name</label>
+              <input class="control-input" type="text" id="wizardPrimaryName" value="Person 1">
+            </div>
+            <div class="wizard-field">
+              <label for="wizardCurrentAge">Current age</label>
+              <input class="control-input" type="number" id="wizardCurrentAge" min="18" max="85" step="1" value="35">
+            </div>
+            <div class="wizard-field">
+              <label for="wizardRetireAge">Target retirement age</label>
+              <input class="control-input" type="number" id="wizardRetireAge" min="35" max="85" step="1" value="55">
+            </div>
+            <div class="wizard-field">
+              <label for="wizardPortfolio">Starting portfolio</label>
+              <select class="control-select" id="wizardPortfolio">
+                <option value="50000">$50k</option>
+                <option value="250000">$250k</option>
+                <option value="500000" selected>$500k</option>
+                <option value="1000000">$1M</option>
+                <option value="2500000">$2.5M</option>
+                <option value="5000000">$5M</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardIncome">Household earned income</label>
+              <select class="control-select" id="wizardIncome">
+                <option value="75000">$75k</option>
+                <option value="150000" selected>$150k</option>
+                <option value="250000">$250k</option>
+                <option value="400000">$400k</option>
+                <option value="650000">$650k</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardSpending">Annual spending</label>
+              <select class="control-select" id="wizardSpending">
+                <option value="60000">$60k</option>
+                <option value="90000" selected>$90k</option>
+                <option value="130000">$130k</option>
+                <option value="180000">$180k</option>
+                <option value="250000">$250k</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardRetirementLifestyle">Retirement lifestyle</label>
+              <select class="control-select" id="wizardRetirementLifestyle">
+                <option value="0.70">Lean: 70% of working spend</option>
+                <option value="0.85" selected>Similar: 85% of working spend</option>
+                <option value="1.00">Full: 100% of working spend</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardRisk">Market posture</label>
+              <select class="control-select" id="wizardRisk">
+                <option value="conservative">Conservative</option>
+                <option value="balanced" selected>Balanced</option>
+                <option value="growth">Growth</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardKids">Children to model</label>
+              <select class="control-select" id="wizardKids">
+                <option value="0" selected>0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardHasSpouse">Household</label>
+              <label class="toggle-label">
+                <input type="checkbox" id="wizardHasSpouse">
+                <span class="toggle-switch"></span>
+                Include spouse/partner
+              </label>
+            </div>
+            <div class="wizard-field wizard-spouse-fields hidden">
+              <label for="wizardSpouseName">Spouse/partner name</label>
+              <input class="control-input" type="text" id="wizardSpouseName" value="Person 2">
+            </div>
+            <div class="wizard-field wizard-spouse-fields hidden">
+              <label for="wizardSpouseAge">Spouse/partner age</label>
+              <input class="control-input" type="number" id="wizardSpouseAge" min="18" max="85" step="1" value="35">
+            </div>
+          </div>
+
+          <div class="wizard-action-row">
+            <button type="button" class="onboarding-btn primary" id="apply-wizard-profile">Build starter profile</button>
+            <button type="button" class="onboarding-btn" id="reset-wizard-profile">Reset builder</button>
+          </div>
+        </section>
+
+        <section class="onboarding-panel" id="panel-tour" role="tabpanel" aria-labelledby="tab-tour" data-onboarding-panel="tour">
+          <h2>Explore the simulator UI</h2>
+          <p>Start the guided tour, or jump directly to a specific control area.</p>
+          <div class="wizard-action-row">
+            <button type="button" class="onboarding-btn primary" id="start-ui-tour">Start guided tour</button>
+          </div>
+          <div class="tour-list" aria-label="Simulator areas">
+            <button type="button" class="tour-step" data-guide-target="sb-presets" data-guide-section="presets">
+              <strong>Quick Scenarios</strong>
+              <span>Apply one assumption category at a time without rebuilding the whole profile.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="sb-yaml" data-guide-section="yaml">
+              <strong>YAML Settings</strong>
+              <span>Edit, upload, copy, download, and validate the full profile representation.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="sb-ages" data-guide-section="ages">
+              <strong>Ages &amp; Retirement</strong>
+              <span>Set household members and the ages where work income stops.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="sb-spending" data-guide-section="spending">
+              <strong>Spending</strong>
+              <span>Set working-year spending and how much lifestyle cost carries into retirement.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="sb-market" data-guide-section="market">
+              <strong>Market &amp; Returns</strong>
+              <span>Switch between Monte Carlo, historical bootstrap, and deterministic returns.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="tour-scenario-card">
+              <strong>Scenario Comparison</strong>
+              <span>Compare current settings against the preset cases after each change.</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="onboarding-footer">
+      <div class="onboarding-status" id="onboarding-status" aria-live="polite"></div>
+      <div class="onboarding-footer-actions">
+        <button type="button" class="onboarding-btn" id="onboarding-dismiss">Do not show automatically</button>
+        <button type="button" class="onboarding-btn primary" id="onboarding-done">Done</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="tour-callout hidden" id="tour-callout" aria-live="polite">
+  <div class="tour-progress" id="tour-progress"></div>
+  <div class="tour-title" id="tour-title"></div>
+  <div class="tour-body" id="tour-body"></div>
+  <div class="tour-actions">
+    <button type="button" class="onboarding-btn" id="tour-prev">Previous</button>
+    <button type="button" class="onboarding-btn" id="tour-close">Close</button>
+    <button type="button" class="onboarding-btn primary" id="tour-next">Next</button>
+  </div>
 </div>
 
 <script type="module" src="./js/main.js"></script>

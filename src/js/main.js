@@ -17,6 +17,10 @@ import {
 } from './charts.js';
 import { runMonteCarlo } from './simulation.js';
 import { cfg } from './config.js';
+import {
+  setOnRender as onboardingSetOnRender,
+  bindOnboarding, maybeShowOnboarding,
+} from './onboarding.js';
 
 let renderTimer = null;
 
@@ -50,17 +54,21 @@ function doRender() {
 document.addEventListener('DOMContentLoaded', () => {
   uiSetOnRender(scheduleRender);
   scenariosSetOnRender(scheduleRender);
+  onboardingSetOnRender(scheduleRender);
   setSyncUICallback(syncUIFromCfg);
 
   applyMetaDefaults();
   renderPresets();
   bindSidebarToggle();
+  bindOnboarding();
   bindYamlEditor();
   bindInputs();
   bindDragDrop();
 
-  if (!loadProfileFromStorage()) {
+  const profileWasLoaded = loadProfileFromStorage();
+  if (!profileWasLoaded) {
     syncUIFromCfg();
     scheduleRender();
   }
+  maybeShowOnboarding();
 });
