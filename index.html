@@ -69,6 +69,15 @@
     transition: transform 0.2s;
   }
   .sidebar-toggle[aria-expanded="false"] svg { transform: scaleX(-1); }
+  .guide-toggle {
+    color: var(--text);
+    border-color: rgba(167,139,250,0.44);
+    background: rgba(167,139,250,0.08);
+  }
+  .guide-toggle:hover,
+  .guide-toggle:focus-visible {
+    background: rgba(167,139,250,0.14);
+  }
 
   /* ── Layout ─────────────────────────────────────── */
   .layout {
@@ -318,6 +327,327 @@
     pointer-events: none;
   }
 
+  /* ── Onboarding ─────────────────────────────────── */
+  body.modal-open { overflow: hidden; }
+
+  .onboarding-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 800;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(6, 9, 14, 0.74);
+    backdrop-filter: blur(10px);
+  }
+  .onboarding-backdrop.show { display: flex; }
+  .onboarding-modal {
+    width: min(980px, 100%);
+    max-height: min(860px, calc(100vh - 48px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 22px 80px rgba(0,0,0,0.48);
+  }
+  .onboarding-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .onboarding-eyebrow {
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .onboarding-title {
+    margin-top: 4px;
+    color: var(--text);
+    font-size: 24px;
+    line-height: 1.18;
+    font-weight: 760;
+  }
+  .onboarding-copy {
+    max-width: 700px;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .icon-btn:hover,
+  .icon-btn:focus-visible {
+    border-color: var(--accent);
+    color: var(--text);
+    outline: none;
+  }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .onboarding-body {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    min-height: 0;
+    overflow: hidden;
+  }
+  .onboarding-tabs {
+    padding: 16px;
+    border-right: 1px solid var(--border);
+    background: rgba(33,38,45,0.42);
+  }
+  .onboarding-tab {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 12px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    text-align: left;
+  }
+  .onboarding-tab:hover,
+  .onboarding-tab:focus-visible {
+    color: var(--text);
+    border-color: var(--border);
+    outline: none;
+  }
+  .onboarding-tab.active {
+    color: var(--text);
+    border-color: rgba(167,139,250,0.5);
+    background: rgba(167,139,250,0.09);
+  }
+  .onboarding-panels {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 18px 20px 22px;
+  }
+  .onboarding-panel { display: none; }
+  .onboarding-panel.active { display: block; }
+  .onboarding-panel h2 {
+    font-size: 17px;
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  .onboarding-panel p {
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .intro-grid,
+  .quick-profile-grid,
+  .wizard-grid,
+  .tour-list {
+    display: grid;
+    gap: 12px;
+  }
+  .intro-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 16px;
+  }
+  .intro-card,
+  .profile-preset,
+  .tour-step {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .intro-card {
+    padding: 14px;
+    min-height: 152px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .intro-card strong,
+  .profile-preset strong,
+  .tour-step strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text);
+    font-size: 13px;
+  }
+  .intro-card span,
+  .profile-preset span,
+  .tour-step span {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .intro-card code {
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95em;
+  }
+  .wizard-action-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .onboarding-btn {
+    min-height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+  }
+  .onboarding-btn:hover,
+  .onboarding-btn:focus-visible {
+    border-color: var(--accent);
+    color: var(--text);
+    outline: none;
+  }
+  .onboarding-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+  }
+  .onboarding-btn.primary {
+    color: var(--accent);
+    border-color: rgba(167,139,250,0.55);
+    background: rgba(167,139,250,0.09);
+  }
+  .onboarding-btn.danger {
+    color: var(--danger);
+    border-color: rgba(248,81,73,0.45);
+  }
+  .quick-profile-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 16px;
+  }
+  .profile-preset,
+  .tour-step {
+    min-height: 92px;
+    padding: 12px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .profile-preset:hover,
+  .profile-preset:focus-visible,
+  .tour-step:hover,
+  .tour-step:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+  }
+  .profile-preset.active {
+    border-color: rgba(167,139,250,0.72);
+    background: rgba(167,139,250,0.1);
+  }
+  .wizard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 16px;
+  }
+  .wizard-field > label:not(.toggle-label) {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .wizard-field .toggle-label { margin-bottom: 0; }
+  .wizard-spouse-fields.hidden { display: none; }
+  .onboarding-status {
+    min-height: 18px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .onboarding-status.ok { color: var(--success); }
+  .onboarding-status.error { color: var(--danger); }
+  .tour-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 16px;
+  }
+  .onboarding-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    background: rgba(13,17,23,0.34);
+  }
+  .onboarding-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tour-highlight {
+    position: relative;
+    z-index: 2;
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 8px rgba(167,139,250,0.12);
+  }
+  .tour-callout {
+    position: fixed;
+    z-index: 820;
+    right: 20px;
+    bottom: 20px;
+    width: min(360px, calc(100vw - 32px));
+    border: 1px solid rgba(167,139,250,0.44);
+    border-radius: 8px;
+    background: #0b1016;
+    box-shadow: 0 18px 54px rgba(0,0,0,0.46);
+    padding: 14px;
+  }
+  .tour-callout.hidden { display: none; }
+  .tour-progress {
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tour-title {
+    margin-top: 4px;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 720;
+  }
+  .tour-body {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .tour-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
   /* ── Main content ─────────────────────────────── */
   .main {
     overflow-y: auto; overflow-x: hidden;
@@ -490,10 +820,15 @@
     .header-actions {
       width: 100%;
       justify-content: space-between;
+      flex-wrap: wrap;
     }
     .sidebar-toggle {
       flex: 1 1 auto;
       min-width: 0;
+    }
+    .header-badge {
+      width: 100%;
+      text-align: center;
     }
     .section-header { padding: 12px 14px; }
     .section-body { padding: 0 14px 14px; }
@@ -521,6 +856,63 @@
       align-items: flex-start;
       flex-direction: column;
     }
+    .onboarding-backdrop {
+      align-items: stretch;
+      padding: 10px;
+    }
+    .onboarding-modal {
+      max-height: calc(100vh - 20px);
+      max-height: calc(100dvh - 20px);
+    }
+    .onboarding-header {
+      padding: 16px;
+    }
+    .onboarding-title {
+      font-size: 20px;
+    }
+    .onboarding-body {
+      display: block;
+      overflow-y: auto;
+    }
+    .onboarding-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      padding: 10px;
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .onboarding-tab {
+      justify-content: center;
+      min-height: 38px;
+      margin: 0;
+      padding: 0 8px;
+      text-align: center;
+    }
+    .onboarding-panels {
+      padding: 14px;
+      overflow: visible;
+    }
+    .intro-grid,
+    .quick-profile-grid,
+    .wizard-grid,
+    .tour-list {
+      grid-template-columns: 1fr;
+    }
+    .intro-card {
+      min-height: auto;
+    }
+    .onboarding-footer {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .onboarding-footer-actions {
+      width: 100%;
+    }
+    .onboarding-footer-actions .onboarding-btn,
+    .onboarding-footer > .onboarding-btn {
+      flex: 1 1 auto;
+    }
   }
 </style>
 </head>
@@ -532,6 +924,9 @@
     <div class="header-sub" id="header-sub">Person 1 · Real (inflation-adjusted) dollars</div>
   </div>
   <div class="header-actions">
+    <button type="button" class="sidebar-toggle guide-toggle" id="open-onboarding">
+      Intro guide
+    </button>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-controls="sidebar" aria-expanded="true">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
         <rect x="2" y="3" width="12" height="10" rx="2"/>
@@ -641,7 +1036,7 @@
     <div class="section-body" id="sb-portfolio">
       <div class="control-group">
         <div class="control-label"><span>Starting portfolio</span><span class="control-val" id="v-portfolioTotal">$10.4M</span></div>
-        <input type="range" id="portfolioTotal" min="0" max="20000000" step="100000" value="500000" />
+        <input type="range" id="portfolioTotal" min="0" max="20000000" step="50000" value="500000" />
       </div>
       <div class="control-group">
         <div class="control-label"><span>Safe withdrawal rate <span style="color:var(--muted);font-weight:400">(planning target only)</span></span><span class="control-val" id="v-swr">4.0%</span></div>
@@ -662,11 +1057,11 @@
     <div class="section-body hidden" id="sb-income">
       <div class="control-group">
         <div class="control-label"><span><span data-person1>Person 1</span> base salary</span><span class="control-val" id="v-nathanSalaryBase">$120k</span></div>
-        <input type="range" id="nathanSalaryBase" min="0" max="600000" step="10000" value="120000" />
+        <input type="range" id="nathanSalaryBase" min="0" max="600000" step="5000" value="120000" />
       </div>
       <div class="control-group" data-spouse-only>
         <div class="control-label"><span><span data-person2>Person 2</span> base salary</span><span class="control-val" id="v-tanyaSalaryBase">$0</span></div>
-        <input type="range" id="tanyaSalaryBase" min="0" max="600000" step="10000" value="0" />
+        <input type="range" id="tanyaSalaryBase" min="0" max="600000" step="5000" value="0" />
       </div>
       <div class="control-group">
         <div class="control-label"><span><span data-person1>Person 1</span> RSUs / year</span><span class="control-val" id="v-nathanRsuAnnual">$0</span></div>
@@ -996,7 +1391,7 @@
   </div>
 
   <!-- Metric Cards -->
-  <div class="metrics-row">
+  <div class="metrics-row" id="tour-metrics">
     <div class="metric-card">
       <div class="metric-label">Survival Probability</div>
       <div class="metric-value" id="m-survival" style="color:var(--success)">—</div>
@@ -1025,7 +1420,7 @@
   </div>
 
   <!-- Portfolio trajectory chart -->
-  <div class="chart-card">
+  <div class="chart-card" id="tour-portfolio-card">
     <div class="chart-header">
       <div>
         <div class="chart-title">Portfolio Trajectory</div>
@@ -1047,7 +1442,7 @@
   </div>
 
   <!-- Cashflow + Distribution row -->
-  <div class="charts-row">
+  <div class="charts-row" id="tour-cashflow-row">
     <div class="chart-card">
       <div class="chart-header">
         <div>
@@ -1069,7 +1464,7 @@
   </div>
 
   <!-- Scenario Comparison -->
-  <div class="chart-card">
+  <div class="chart-card" id="tour-scenario-card">
     <div class="chart-header">
       <div>
         <div class="chart-title">Scenario Comparison</div>
@@ -1082,6 +1477,232 @@
   </div>
 
 </main>
+</div>
+
+<div class="onboarding-backdrop" id="onboarding" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" aria-hidden="true">
+  <section class="onboarding-modal">
+    <div class="onboarding-header">
+      <div>
+        <div class="onboarding-eyebrow">Intro guide</div>
+        <h1 class="onboarding-title" id="onboarding-title">Build a retirement profile, then test the levers.</h1>
+        <p class="onboarding-copy">
+          Load an existing YAML profile, start from a fictional sample, or create a usable starter profile from a few household stats. Everything runs locally in this browser.
+        </p>
+      </div>
+      <button type="button" class="icon-btn" id="onboarding-close" aria-label="Close intro guide">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 4l8 8M12 4l-8 8"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="onboarding-body">
+      <div class="onboarding-tabs" role="tablist" aria-label="Intro guide sections">
+        <button type="button" class="onboarding-tab active" id="tab-start" role="tab" aria-selected="true" aria-controls="panel-start" data-onboarding-tab="start">Start</button>
+        <button type="button" class="onboarding-tab" id="tab-build" role="tab" aria-selected="false" aria-controls="panel-build" data-onboarding-tab="build">Build</button>
+        <button type="button" class="onboarding-tab" id="tab-tour" role="tab" aria-selected="false" aria-controls="panel-tour" data-onboarding-tab="tour">Tour</button>
+      </div>
+
+      <div class="onboarding-panels">
+        <section class="onboarding-panel active" id="panel-start" role="tabpanel" aria-labelledby="tab-start" data-onboarding-panel="start">
+          <h2>Choose how to begin</h2>
+          <p>A profile can come from a YAML file, the starter builder, or the sample household.</p>
+          <div class="intro-grid">
+            <div class="intro-card">
+              <div>
+                <strong>Load your own profile</strong>
+                <span>Use a <code>profile.yaml</code> generated elsewhere, edited by hand, or downloaded from this simulator.</span>
+              </div>
+              <button type="button" class="onboarding-btn primary" id="onboarding-load-profile">Load profile file</button>
+            </div>
+            <div class="intro-card">
+              <div>
+                <strong>Build from stats</strong>
+                <span>Enter rough age, income, portfolio, spending, household, and risk assumptions.</span>
+              </div>
+              <button type="button" class="onboarding-btn" data-jump-onboarding-tab="build">Open builder</button>
+            </div>
+            <div class="intro-card">
+              <div>
+                <strong>Try the sample</strong>
+                <span>Load a fictional dual-income household and explore charts without entering personal details.</span>
+              </div>
+              <button type="button" class="onboarding-btn" id="onboarding-load-sample">Use sample profile</button>
+            </div>
+          </div>
+          <div class="wizard-action-row">
+            <button type="button" class="onboarding-btn" id="onboarding-use-defaults">Use browser-safe defaults</button>
+            <button type="button" class="onboarding-btn" data-jump-onboarding-tab="tour">Show UI tour options</button>
+          </div>
+        </section>
+
+        <section class="onboarding-panel" id="panel-build" role="tabpanel" aria-labelledby="tab-build" data-onboarding-panel="build">
+          <h2>Build a starter profile</h2>
+          <p>Pick a shape, adjust the core stats, then generate editable YAML and rerun the simulator.</p>
+
+          <div class="quick-profile-grid" aria-label="Starter profile shapes">
+            <button type="button" class="profile-preset active" data-profile-preset="solo">
+              <strong>Solo starter</strong>
+              <span>One person, moderate income, early accumulation, no child costs.</span>
+            </button>
+            <button type="button" class="profile-preset" data-profile-preset="family">
+              <strong>Dual-income family</strong>
+              <span>Two earners, higher spending, two children, balanced market assumptions.</span>
+            </button>
+            <button type="button" class="profile-preset" data-profile-preset="near">
+              <strong>Near retirement</strong>
+              <span>Older household, larger portfolio, lower risk allocation, Social Security in view.</span>
+            </button>
+          </div>
+
+          <div class="wizard-grid">
+            <div class="wizard-field">
+              <label for="wizardPrimaryName">Primary name</label>
+              <input class="control-input" type="text" id="wizardPrimaryName" value="Person 1">
+            </div>
+            <div class="wizard-field">
+              <label for="wizardCurrentAge">Current age</label>
+              <input class="control-input" type="number" id="wizardCurrentAge" min="18" max="85" step="1" value="35">
+            </div>
+            <div class="wizard-field">
+              <label for="wizardRetireAge">Target retirement age</label>
+              <input class="control-input" type="number" id="wizardRetireAge" min="35" max="85" step="1" value="55">
+            </div>
+            <div class="wizard-field">
+              <label for="wizardPortfolio">Starting portfolio</label>
+              <select class="control-select" id="wizardPortfolio">
+                <option value="50000">$50k</option>
+                <option value="250000">$250k</option>
+                <option value="500000" selected>$500k</option>
+                <option value="1000000">$1M</option>
+                <option value="2500000">$2.5M</option>
+                <option value="5000000">$5M</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardIncome">Household earned income</label>
+              <select class="control-select" id="wizardIncome">
+                <option value="75000">$75k</option>
+                <option value="150000" selected>$150k</option>
+                <option value="250000">$250k</option>
+                <option value="400000">$400k</option>
+                <option value="650000">$650k</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardSpending">Annual spending</label>
+              <select class="control-select" id="wizardSpending">
+                <option value="60000">$60k</option>
+                <option value="90000" selected>$90k</option>
+                <option value="130000">$130k</option>
+                <option value="180000">$180k</option>
+                <option value="250000">$250k</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardRetirementLifestyle">Retirement lifestyle</label>
+              <select class="control-select" id="wizardRetirementLifestyle">
+                <option value="0.70">Lean: 70% of working spend</option>
+                <option value="0.85" selected>Similar: 85% of working spend</option>
+                <option value="1.00">Full: 100% of working spend</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardRisk">Market posture</label>
+              <select class="control-select" id="wizardRisk">
+                <option value="conservative">Conservative</option>
+                <option value="balanced" selected>Balanced</option>
+                <option value="growth">Growth</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardKids">Children to model</label>
+              <select class="control-select" id="wizardKids">
+                <option value="0" selected>0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+            <div class="wizard-field">
+              <label for="wizardHasSpouse">Household</label>
+              <label class="toggle-label">
+                <input type="checkbox" id="wizardHasSpouse">
+                <span class="toggle-switch"></span>
+                Include spouse/partner
+              </label>
+            </div>
+            <div class="wizard-field wizard-spouse-fields hidden">
+              <label for="wizardSpouseName">Spouse/partner name</label>
+              <input class="control-input" type="text" id="wizardSpouseName" value="Person 2">
+            </div>
+            <div class="wizard-field wizard-spouse-fields hidden">
+              <label for="wizardSpouseAge">Spouse/partner age</label>
+              <input class="control-input" type="number" id="wizardSpouseAge" min="18" max="85" step="1" value="35">
+            </div>
+          </div>
+
+          <div class="wizard-action-row">
+            <button type="button" class="onboarding-btn primary" id="apply-wizard-profile">Build starter profile</button>
+            <button type="button" class="onboarding-btn" id="reset-wizard-profile">Reset builder</button>
+          </div>
+        </section>
+
+        <section class="onboarding-panel" id="panel-tour" role="tabpanel" aria-labelledby="tab-tour" data-onboarding-panel="tour">
+          <h2>Explore the simulator UI</h2>
+          <p>Start the guided tour, or jump directly to a specific control area.</p>
+          <div class="wizard-action-row">
+            <button type="button" class="onboarding-btn primary" id="start-ui-tour">Start guided tour</button>
+          </div>
+          <div class="tour-list" aria-label="Simulator areas">
+            <button type="button" class="tour-step" data-guide-target="sb-presets" data-guide-section="presets">
+              <strong>Quick Scenarios</strong>
+              <span>Apply one assumption category at a time without rebuilding the whole profile.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="sb-yaml" data-guide-section="yaml">
+              <strong>YAML Settings</strong>
+              <span>Edit, upload, copy, download, and validate the full profile representation.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="sb-ages" data-guide-section="ages">
+              <strong>Ages &amp; Retirement</strong>
+              <span>Set household members and the ages where work income stops.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="sb-spending" data-guide-section="spending">
+              <strong>Spending</strong>
+              <span>Set working-year spending and how much lifestyle cost carries into retirement.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="sb-market" data-guide-section="market">
+              <strong>Market &amp; Returns</strong>
+              <span>Switch between Monte Carlo, historical bootstrap, and deterministic returns.</span>
+            </button>
+            <button type="button" class="tour-step" data-guide-target="tour-scenario-card">
+              <strong>Scenario Comparison</strong>
+              <span>Compare current settings against the preset cases after each change.</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="onboarding-footer">
+      <div class="onboarding-status" id="onboarding-status" aria-live="polite"></div>
+      <div class="onboarding-footer-actions">
+        <button type="button" class="onboarding-btn" id="onboarding-dismiss">Do not show automatically</button>
+        <button type="button" class="onboarding-btn primary" id="onboarding-done">Done</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="tour-callout hidden" id="tour-callout" aria-live="polite">
+  <div class="tour-progress" id="tour-progress"></div>
+  <div class="tour-title" id="tour-title"></div>
+  <div class="tour-body" id="tour-body"></div>
+  <div class="tour-actions">
+    <button type="button" class="onboarding-btn" id="tour-prev">Previous</button>
+    <button type="button" class="onboarding-btn" id="tour-close">Close</button>
+    <button type="button" class="onboarding-btn primary" id="tour-next">Next</button>
+  </div>
 </div>
 
 <div class="computing" id="computing">
@@ -2075,9 +2696,135 @@ const WITHDRAWAL_STRATEGIES = [
   'vanguard_dynamic',
 ];
 const SIDEBAR_STORAGE_KEY = 'retirementSimulator.sidebarCollapsed';
+const ONBOARDING_STORAGE_KEY = 'retirementSimulator.onboardingDismissed.v1';
 let yamlDirty = false;
+let activeTourIndex = -1;
+
+const WIZARD_PRESETS = {
+  solo: {
+    wizardPrimaryName: 'Person 1',
+    wizardCurrentAge: 35,
+    wizardRetireAge: 55,
+    wizardPortfolio: 500000,
+    wizardIncome: 150000,
+    wizardSpending: 90000,
+    wizardRetirementLifestyle: 0.85,
+    wizardRisk: 'balanced',
+    wizardKids: 0,
+    wizardHasSpouse: false,
+    wizardSpouseName: 'Person 2',
+    wizardSpouseAge: 35,
+  },
+  family: {
+    wizardPrimaryName: 'Alex',
+    wizardCurrentAge: 35,
+    wizardRetireAge: 52,
+    wizardPortfolio: 1000000,
+    wizardIncome: 400000,
+    wizardSpending: 130000,
+    wizardRetirementLifestyle: 0.85,
+    wizardRisk: 'balanced',
+    wizardKids: 2,
+    wizardHasSpouse: true,
+    wizardSpouseName: 'Jordan',
+    wizardSpouseAge: 33,
+  },
+  near: {
+    wizardPrimaryName: 'Person 1',
+    wizardCurrentAge: 58,
+    wizardRetireAge: 65,
+    wizardPortfolio: 2500000,
+    wizardIncome: 150000,
+    wizardSpending: 90000,
+    wizardRetirementLifestyle: 0.85,
+    wizardRisk: 'conservative',
+    wizardKids: 0,
+    wizardHasSpouse: false,
+    wizardSpouseName: 'Person 2',
+    wizardSpouseAge: 58,
+  },
+};
+
+const RISK_PRESETS = {
+  conservative: {
+    equityReturnNominal: 0.07,
+    equityStd: 0.12,
+    bondReturnNominal: 0.035,
+    equityFractionWorking: 0.60,
+    equityFractionRetired: 0.40,
+  },
+  balanced: {
+    equityReturnNominal: 0.085,
+    equityStd: 0.16,
+    bondReturnNominal: 0.04,
+    equityFractionWorking: 0.80,
+    equityFractionRetired: 0.60,
+  },
+  growth: {
+    equityReturnNominal: 0.095,
+    equityStd: 0.19,
+    bondReturnNominal: 0.04,
+    equityFractionWorking: 0.90,
+    equityFractionRetired: 0.70,
+  },
+};
+
+const TOUR_STEPS = [
+  {
+    target: 'sb-presets',
+    section: 'presets',
+    title: 'Quick Scenarios',
+    body: 'Preset buttons change one assumption family at a time, so you can test retirement timing, spending, family costs, and market assumptions without rebuilding the whole profile.',
+  },
+  {
+    target: 'sb-ages',
+    section: 'ages',
+    title: 'Ages & Retirement',
+    body: 'This section defines who is in the plan and when work income stops. The rest of the charts use these ages as the timeline anchor.',
+  },
+  {
+    target: 'sb-spending',
+    section: 'spending',
+    title: 'Spending',
+    body: 'Working-year spending and retirement lifestyle percentage drive the withdrawal need. This is usually the highest-impact area to sanity-check first.',
+  },
+  {
+    target: 'sb-market',
+    section: 'market',
+    title: 'Market & Returns',
+    body: 'Switch the return engine or tune return, inflation, volatility, and allocation assumptions. Historical bootstrap ignores the equity return sliders.',
+  },
+  {
+    target: 'sb-simulation',
+    section: 'simulation',
+    title: 'Simulation & Withdrawals',
+    body: 'Choose the withdrawal rule, run count, and horizon. Variable strategies expose additional controls only when they are relevant.',
+  },
+  {
+    target: 'tour-metrics',
+    title: 'Top Metrics',
+    body: 'The cards summarize survivability, retirement readiness, required portfolio, and the age when the current plan becomes funded on the median path.',
+  },
+  {
+    target: 'tour-portfolio-card',
+    title: 'Portfolio Trajectory',
+    body: 'The main chart shows the median path and percentile bands so you can see both the expected path and downside dispersion.',
+  },
+  {
+    target: 'tour-scenario-card',
+    title: 'Scenario Comparison',
+    body: 'This panel compares the current profile with preset scenarios after each major change.',
+  },
+  {
+    target: 'sb-yaml',
+    section: 'yaml',
+    title: 'YAML Settings',
+    body: 'The YAML editor is the portable profile. Use it to load, edit, copy, download, and version your full set of assumptions.',
+  },
+];
 
 const TOOLTIPS = {
+  'open-onboarding': 'Open the intro guide, profile builder, and UI tour.',
   'sidebar-toggle': 'Show or hide the controls pane. On phones, expanded controls fill the screen and the results stay underneath.',
   yamlSettings: 'Profile-shaped YAML for the same settings controlled by the sliders, buttons, and selects.',
   applyYaml: 'Validate this YAML, update all controls, and rerun the simulation.',
@@ -2251,9 +2998,14 @@ function loadProfileFromStorage() {
 
 function loadProfileFromText(text) {
   const textarea = document.getElementById('yamlSettings');
-  if (!textarea) return;
+  if (!textarea) return false;
   textarea.value = text;
-  applyYamlSettings();
+  const ok = applyYamlSettings();
+  setOnboardingStatus(
+    ok ? 'Profile loaded. You can close the guide or continue the tour.' : 'Profile could not be loaded. Check the YAML error in settings.',
+    ok ? 'ok' : 'error'
+  );
+  return ok;
 }
 
 function downloadProfile() {
@@ -2282,6 +3034,293 @@ function bindDragDrop() {
     reader.onload = (ev) => loadProfileFromText(String(ev.target?.result ?? ''));
     reader.readAsText(file);
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Intro guide, profile builder, and UI tour
+// ─────────────────────────────────────────────────────────────────────────────
+function setOnboardingStatus(message, state = '') {
+  const status = document.getElementById('onboarding-status');
+  if (!status) return;
+  status.textContent = message;
+  status.className = state ? `onboarding-status ${state}` : 'onboarding-status';
+}
+
+function showOnboardingTab(tab) {
+  document.querySelectorAll('[data-onboarding-tab]').forEach(btn => {
+    const active = btn.dataset.onboardingTab === tab;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', String(active));
+  });
+  document.querySelectorAll('[data-onboarding-panel]').forEach(panel => {
+    panel.classList.toggle('active', panel.dataset.onboardingPanel === tab);
+  });
+}
+
+function setOnboardingVisible(visible, persistDismissal = false) {
+  const modal = document.getElementById('onboarding');
+  if (!modal) return;
+  modal.classList.toggle('show', visible);
+  modal.setAttribute('aria-hidden', String(!visible));
+  document.body.classList.toggle('modal-open', visible);
+  if (visible) {
+    setTimeout(() => {
+      const active = modal.querySelector('.onboarding-tab.active') ?? document.getElementById('onboarding-close');
+      active?.focus();
+    }, 0);
+  } else if (persistDismissal) {
+    try { window.localStorage.setItem(ONBOARDING_STORAGE_KEY, '1'); } catch {}
+  }
+}
+
+function maybeShowOnboarding(profileWasLoaded) {
+  if (profileWasLoaded) return;
+  let dismissed = false;
+  try {
+    dismissed = window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === '1';
+  } catch {
+    dismissed = false;
+  }
+  if (!dismissed) {
+    setTimeout(() => setOnboardingVisible(true, false), 350);
+  }
+}
+
+function setWizardField(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.type === 'checkbox') {
+    el.checked = Boolean(value);
+  } else {
+    el.value = String(value);
+  }
+}
+
+function setWizardPreset(name) {
+  const preset = WIZARD_PRESETS[name] ?? WIZARD_PRESETS.solo;
+  Object.entries(preset).forEach(([id, value]) => setWizardField(id, value));
+  document.querySelectorAll('.profile-preset').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.profilePreset === name);
+  });
+  syncWizardSpouseFields();
+}
+
+function syncWizardSpouseFields() {
+  const hasSpouse = Boolean(document.getElementById('wizardHasSpouse')?.checked);
+  document.querySelectorAll('.wizard-spouse-fields').forEach(el => {
+    el.classList.toggle('hidden', !hasSpouse);
+  });
+}
+
+function readWizardNumber(id, fallback, min, max) {
+  const value = Number(document.getElementById(id)?.value);
+  const safe = Number.isFinite(value) ? value : fallback;
+  return clamp(safe, min, max);
+}
+
+function readWizardString(id, fallback) {
+  const value = String(document.getElementById(id)?.value ?? '').trim();
+  return value || fallback;
+}
+
+function sampleProfileConfig() {
+  return {
+    ...FALLBACK_DEFAULT,
+    person1Name: 'Alex',
+    person2Name: 'Jordan',
+    hasSpouse: true,
+    nathanAge: 35,
+    tanyaAge: 33,
+    retireNathanAge: 52,
+    retireTanyaAge: 50,
+    portfolioTotal: 850000,
+    nathanSalaryBase: 185000,
+    nathanRsuAnnual: 60000,
+    tanyaSalaryBase: 140000,
+    tanyaRsuAnnual: 40000,
+    effectiveIncomeTax: 0.30,
+    baseSpending: 130000,
+    retirementSpendingFraction: 0.80,
+    healthcareAnnual: 20000,
+    numKids: 2,
+    firstKidYear: 2,
+    childcareAnnual: 30000,
+    k12Annual: 8000,
+    collegeContribution: 75000,
+    ssNathanAnnual: 28000,
+    ssTanyaAnnual: 22000,
+    ssReductionFactor: 0.85,
+    upgradeHouse: true,
+    upgradeYear: 3,
+    upgradeAdditionalCost: 500000,
+    withdrawalStrategy: 'guardrails',
+    mcRuns: 500,
+  };
+}
+
+function applyConfigFromOnboarding(nextCfg, message) {
+  cfg = { ...nextCfg };
+  normalizeConfigBounds();
+  scenarioCache = null;
+  syncUIFromCfg();
+  updateScenarioButtonStates();
+  scheduleRender();
+  setOnboardingStatus(message, 'ok');
+}
+
+function applyWizardProfile() {
+  const hasPartner = Boolean(document.getElementById('wizardHasSpouse')?.checked);
+  const primaryAge = Math.round(readWizardNumber('wizardCurrentAge', 35, 18, 85));
+  const spouseAge = Math.round(readWizardNumber('wizardSpouseAge', primaryAge, 18, 85));
+  const retireAge = Math.round(readWizardNumber('wizardRetireAge', 55, 35, 85));
+  const householdIncome = readWizardNumber('wizardIncome', 150000, 0, 2000000);
+  const risk = RISK_PRESETS[document.getElementById('wizardRisk')?.value] ?? RISK_PRESETS.balanced;
+  const primaryShare = hasPartner ? 0.60 : 1;
+
+  const next = {
+    ...FALLBACK_DEFAULT,
+    ...risk,
+    person1Name: readWizardString('wizardPrimaryName', 'Person 1'),
+    person2Name: hasPartner ? readWizardString('wizardSpouseName', 'Person 2') : '',
+    hasSpouse: hasPartner,
+    nathanAge: primaryAge,
+    tanyaAge: hasPartner ? spouseAge : primaryAge,
+    retireNathanAge: Math.max(primaryAge, retireAge),
+    retireTanyaAge: hasPartner ? Math.max(spouseAge, retireAge) : Math.max(primaryAge, retireAge),
+    portfolioTotal: readWizardNumber('wizardPortfolio', 500000, 0, 100000000),
+    nathanSalaryBase: Math.round(householdIncome * primaryShare),
+    tanyaSalaryBase: hasPartner ? Math.round(householdIncome * (1 - primaryShare)) : 0,
+    baseSpending: readWizardNumber('wizardSpending', 90000, 0, 1000000),
+    retirementSpendingFraction: readWizardNumber('wizardRetirementLifestyle', 0.85, 0.4, 1.5),
+    numKids: Math.round(readWizardNumber('wizardKids', 0, 0, 6)),
+    ssNathanAnnual: primaryAge >= 50 ? 28000 : 20000,
+    ssTanyaAnnual: hasPartner ? (spouseAge >= 50 ? 22000 : 16000) : 0,
+    ssReductionFactor: primaryAge < 45 ? 0.85 : 0.95,
+    years: Math.max(30, Math.min(90, 100 - primaryAge)),
+  };
+
+  if (next.numKids > 0) {
+    next.firstKidYear = primaryAge >= 45 ? 0 : 2;
+  }
+
+  applyConfigFromOnboarding(next, 'Starter profile built. The YAML editor and charts now reflect these assumptions.');
+}
+
+function openGuideSection(section) {
+  if (!section) return;
+  setSidebarCollapsed(false, false);
+  const header = document.querySelector(`.section-header[data-section="${section}"]`);
+  const body = document.getElementById('sb-' + section);
+  if (!header || !body) return;
+  body.classList.remove('hidden');
+  header.classList.add('open');
+}
+
+function clearTourHighlight() {
+  document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+}
+
+function focusGuideTarget(targetId, section) {
+  openGuideSection(section);
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clearTourHighlight();
+  target.classList.add('tour-highlight');
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => target.classList.remove('tour-highlight'), 4200);
+}
+
+function setTourStep(index) {
+  if (index < 0 || index >= TOUR_STEPS.length) {
+    endGuidedTour();
+    return;
+  }
+
+  activeTourIndex = index;
+  const step = TOUR_STEPS[index];
+  focusGuideTarget(step.target, step.section);
+
+  const callout = document.getElementById('tour-callout');
+  document.getElementById('tour-progress').textContent = `Step ${index + 1} of ${TOUR_STEPS.length}`;
+  document.getElementById('tour-title').textContent = step.title;
+  document.getElementById('tour-body').textContent = step.body;
+  document.getElementById('tour-prev').disabled = index === 0;
+  document.getElementById('tour-next').textContent = index === TOUR_STEPS.length - 1 ? 'Finish' : 'Next';
+  callout?.classList.remove('hidden');
+}
+
+function startGuidedTour() {
+  setOnboardingVisible(false, false);
+  setTourStep(0);
+}
+
+function endGuidedTour() {
+  activeTourIndex = -1;
+  clearTourHighlight();
+  document.getElementById('tour-callout')?.classList.add('hidden');
+}
+
+function bindOnboarding() {
+  document.getElementById('open-onboarding')?.addEventListener('click', () => {
+    endGuidedTour();
+    setOnboardingVisible(true, false);
+  });
+  document.getElementById('onboarding-close')?.addEventListener('click', () => setOnboardingVisible(false, true));
+  document.getElementById('onboarding-done')?.addEventListener('click', () => setOnboardingVisible(false, true));
+  document.getElementById('onboarding-dismiss')?.addEventListener('click', () => {
+    setOnboardingStatus('Intro guide will not open automatically. Use the header button to reopen it.', 'ok');
+    setOnboardingVisible(false, true);
+  });
+  document.getElementById('onboarding')?.addEventListener('click', (e) => {
+    if (e.target?.id === 'onboarding') setOnboardingVisible(false, true);
+  });
+
+  document.querySelectorAll('[data-onboarding-tab]').forEach(btn => {
+    btn.addEventListener('click', () => showOnboardingTab(btn.dataset.onboardingTab));
+  });
+  document.querySelectorAll('[data-jump-onboarding-tab]').forEach(btn => {
+    btn.addEventListener('click', () => showOnboardingTab(btn.dataset.jumpOnboardingTab));
+  });
+
+  document.getElementById('onboarding-load-profile')?.addEventListener('click', () => {
+    document.getElementById('profileFileInput')?.click();
+  });
+  document.getElementById('onboarding-load-sample')?.addEventListener('click', () => {
+    applyConfigFromOnboarding(sampleProfileConfig(), 'Sample profile loaded. The profile remains local to this browser.');
+  });
+  document.getElementById('onboarding-use-defaults')?.addEventListener('click', () => {
+    applyConfigFromOnboarding(FALLBACK_DEFAULT, 'Default starter profile loaded.');
+  });
+
+  document.querySelectorAll('.profile-preset').forEach(btn => {
+    btn.addEventListener('click', () => setWizardPreset(btn.dataset.profilePreset));
+  });
+  document.getElementById('wizardHasSpouse')?.addEventListener('change', syncWizardSpouseFields);
+  document.getElementById('apply-wizard-profile')?.addEventListener('click', applyWizardProfile);
+  document.getElementById('reset-wizard-profile')?.addEventListener('click', () => {
+    setWizardPreset('solo');
+    setOnboardingStatus('Builder reset.', '');
+  });
+
+  document.getElementById('start-ui-tour')?.addEventListener('click', startGuidedTour);
+  document.querySelectorAll('.tour-step').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setOnboardingVisible(false, false);
+      focusGuideTarget(btn.dataset.guideTarget, btn.dataset.guideSection);
+    });
+  });
+  document.getElementById('tour-prev')?.addEventListener('click', () => setTourStep(activeTourIndex - 1));
+  document.getElementById('tour-next')?.addEventListener('click', () => setTourStep(activeTourIndex + 1));
+  document.getElementById('tour-close')?.addEventListener('click', endGuidedTour);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const onboardingOpen = document.getElementById('onboarding')?.classList.contains('show');
+    if (onboardingOpen) setOnboardingVisible(false, true);
+    if (activeTourIndex >= 0) endGuidedTour();
+  });
+
+  setWizardPreset('solo');
 }
 
 function cfgToProfileYaml(c = cfg) {
@@ -2833,13 +3872,16 @@ document.addEventListener('DOMContentLoaded', () => {
   applyMetaDefaults();
   renderPresets();
   bindSidebarToggle();
+  bindOnboarding();
   bindYamlEditor();
   bindInputs();
   bindDragDrop();
-  if (!loadProfileFromStorage()) {
+  const profileWasLoaded = loadProfileFromStorage();
+  if (!profileWasLoaded) {
     syncUIFromCfg();
     scheduleRender();
   }
+  maybeShowOnboarding(profileWasLoaded);
 });
 </script>
 </body>
