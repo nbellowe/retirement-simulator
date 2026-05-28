@@ -382,6 +382,113 @@
     height: 320px !important;
   }
 
+  .derived-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 14px;
+  }
+  .summary-pill {
+    min-width: 118px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    padding: 8px 10px;
+  }
+  .summary-pill-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .summary-pill-value {
+    margin-top: 2px;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Feasibility heatmap */
+  .heatmap-shell {
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: minmax(96px, 0.8fr) repeat(var(--cols), minmax(54px, 1fr));
+    gap: 5px;
+    min-width: 720px;
+  }
+  .heatmap-corner,
+  .heatmap-col-label,
+  .heatmap-row-label {
+    min-height: 32px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+  .heatmap-col-label {
+    justify-content: center;
+    text-align: center;
+  }
+  .heatmap-row-label {
+    justify-content: flex-end;
+    padding-right: 6px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .heatmap-cell {
+    min-height: 38px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0d1117;
+    font-size: 12px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+  }
+  .heatmap-cell.current {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .heatmap-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .heatmap-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .heatmap-swatch {
+    width: 18px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .empty-state {
+    min-height: 80px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+  }
+
   /* Scenario comparison */
   .scenario-grid {
     display: grid;
@@ -1046,6 +1153,49 @@
     <canvas id="portfolio-chart"></canvas>
   </div>
 
+  <!-- Feasibility Heatmap -->
+  <div class="chart-card" id="feasibility-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Retirement Feasibility Heatmap</div>
+        <div class="chart-sub" id="feasibility-sub">Survival probability by retirement age and retirement spending</div>
+      </div>
+    </div>
+    <div class="heatmap-shell" id="feasibility-heatmap">
+      <div class="empty-state">Computing feasibility map...</div>
+    </div>
+    <div class="heatmap-legend">
+      <span class="heatmap-legend-item"><span class="heatmap-swatch" style="background:#f85149"></span>&lt;70%</span>
+      <span class="heatmap-legend-item"><span class="heatmap-swatch" style="background:#d29922"></span>70-89%</span>
+      <span class="heatmap-legend-item"><span class="heatmap-swatch" style="background:#3fb950"></span>90%+</span>
+      <span class="heatmap-legend-item"><span class="heatmap-swatch" style="border:2px solid var(--accent);background:transparent"></span>Current settings</span>
+    </div>
+  </div>
+
+  <!-- Historical Cohort Replay -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Historical Cohort Replay</div>
+        <div class="chart-sub" id="cohort-sub">Every valid historical start year replayed as an actual return sequence</div>
+      </div>
+    </div>
+    <div class="derived-summary" id="cohort-summary"></div>
+    <canvas id="cohort-chart"></canvas>
+  </div>
+
+  <!-- Guardrail Lifestyle Variability -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Guardrail Lifestyle Variability</div>
+        <div class="chart-sub" id="lifestyle-sub">Retirement lifestyle spending as a share of the baseline retirement budget</div>
+      </div>
+    </div>
+    <div class="derived-summary" id="lifestyle-summary"></div>
+    <canvas id="lifestyle-chart"></canvas>
+  </div>
+
   <!-- Cashflow + Distribution row -->
   <div class="charts-row">
     <div class="chart-card">
@@ -1146,6 +1296,8 @@ const HIST_EQ_RETURNS = [
   -0.06,  0.29,  0.16,  0.27, -0.18,  // 2018-2022
    0.24,                               // 2023
 ];
+const HIST_START_YEAR = 1928;
+const HIST_END_YEAR = HIST_START_YEAR + HIST_EQ_RETURNS.length - 1;
 const HIST_EQ_MEAN = HIST_EQ_RETURNS.reduce((a, b) => a + b, 0) / HIST_EQ_RETURNS.length;
 
 function makeHistRng(seed) {
@@ -1153,6 +1305,15 @@ function makeHistRng(seed) {
   // ignores mu/sigma — samples from historical return table
   return function(_mu, _sigma) {
     return HIST_EQ_RETURNS[Math.floor(rand() * HIST_EQ_RETURNS.length)];
+  };
+}
+
+function makeHistoricalSequenceRng(startIndex) {
+  let yearOffset = 0;
+  return function(_mu, _sigma) {
+    const idx = Math.min(startIndex + yearOffset, HIST_EQ_RETURNS.length - 1);
+    yearOffset += 1;
+    return HIST_EQ_RETURNS[idx];
   };
 }
 
@@ -1334,6 +1495,10 @@ function simulateOne(c, gauss) {
     // ── Spending ────────────────────────────────────────────────────────────
     const spendMult = Math.pow(1 + c.spendingGrowthReal, y);
     let spending;
+    let retirementBase = 0;
+    let retirementCore = null;
+    let lifestyleRatio = null;
+    let withdrawalRate = null;
     if (bothRet) {
       const baseRetSpend = c.baseSpending * c.retirementSpendingFraction * spendMult;
       const core = retirementCoreSpending(
@@ -1346,6 +1511,10 @@ function simulateOne(c, gauss) {
         previousPortfolioReturn
       );
       previousRetirementCore = core;
+      retirementBase = baseRetSpend;
+      retirementCore = core;
+      lifestyleRatio = baseRetSpend > 0 ? core / baseRetSpend : 1;
+      withdrawalRate = portfolio > 1 ? Math.max(0, core - income) / portfolio : Infinity;
       spending = core;
       if (ageN < c.medicareAge) spending += c.healthcareAnnual;
     } else {
@@ -1373,13 +1542,16 @@ function simulateOne(c, gauss) {
     portfolio = Math.max(portfolio * (1 + portRet) + income - spending, 0);
 
     path.push({ year: y + 1, age: ageN, ageT, portfolio, income, spending,
-                savings: income - spending, retired: bothRet });
+                savings: income - spending, retired: bothRet, retirementBase,
+                retirementCore, lifestyleRatio, withdrawalRate });
 
     if (portfolio === 0 && bothRet) {
       for (let yy = y + 1; yy < c.years; yy++) {
         const aN = c.nathanAge + yy;
         path.push({ year: yy + 1, age: aN, ageT: c.tanyaAge + yy,
-                    portfolio: 0, income: 0, spending: 0, savings: 0, retired: true });
+                    portfolio: 0, income: 0, spending: 0, savings: 0, retired: true,
+                    retirementBase: 0, retirementCore: 0, lifestyleRatio: 0,
+                    withdrawalRate: Infinity });
       }
       break;
     }
@@ -1393,7 +1565,7 @@ function pct(arr, p) {
   return s[Math.min(Math.floor(p * s.length), s.length - 1)] ?? 0;
 }
 
-function runMonteCarlo(c) {
+function runMonteCarlo(c, options = {}) {
   // Resolve nominal → real returns once before simulation
   const method = c.simulationMethod ?? 'monte_carlo';
   const eqReal   = method === 'historical_bootstrap' ? HIST_EQ_MEAN : (c.equityReturnNominal - c.inflation);
@@ -1403,7 +1575,7 @@ function runMonteCarlo(c) {
   const detRng = (mu) => mu;  // always returns expected value for median path
   const medianPath = simulateOne(rc, detRng);
   const allPaths = method === 'deterministic' ? [medianPath] : [];
-  const runCount = Math.max(1, Math.round(rc.mcRuns));
+  const runCount = Math.max(1, Math.round(options.mcRuns ?? rc.mcRuns));
   for (let i = 0; i < runCount && method !== 'deterministic'; i++) {
     const rng = method === 'historical_bootstrap' ? makeHistRng(i * 997 + 42) : makeGauss(i * 997 + 42);
     allPaths.push(simulateOne(rc, rng));
@@ -1428,7 +1600,7 @@ function runMonteCarlo(c) {
 
   return { survival: survive, medianPath, percs,
            portAtRetire: percs[retireIdx], portAt70: percs[age70idx],
-           required, fireEntry, finalVals };
+           required, fireEntry, finalVals, allPaths, runCount: allPaths.length };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1460,6 +1632,7 @@ function spouseName() {
 // Chart state
 // ─────────────────────────────────────────────────────────────────────────────
 let portfolioChart = null, cashflowChart = null, distChart = null;
+let cohortChart = null, lifestyleChart = null;
 
 const GRID_COLOR  = 'rgba(255,255,255,0.05)';
 const TEXT_COLOR  = '#8b949e';
@@ -1467,6 +1640,12 @@ const ACCENT      = '#a78bfa';
 const ACCENT_DARK = '#7c3aed';
 const INCOME_CLR  = '#3fb950';
 const SPEND_CLR   = '#f85149';
+const WARN_CLR    = '#d29922';
+
+const HEATMAP_OFFSETS = [-8, -6, -4, -2, 0, 2, 4, 6, 8];
+const HEATMAP_SPEND_FACTORS = [1.20, 1.10, 1.00, 0.90, 0.80, 0.70];
+const HEATMAP_MIN_RUNS = 60;
+const HEATMAP_MAX_RUNS = 160;
 
 function baseChartOpts(yFmt) {
   return {
@@ -1489,6 +1668,30 @@ function baseChartOpts(yFmt) {
       y: { grid: { color: GRID_COLOR }, ticks: { color: TEXT_COLOR, callback: yFmt } },
     },
   };
+}
+
+function mixRgb(a, b, t) {
+  const clamped = clamp(t, 0, 1);
+  return a.map((v, i) => Math.round(v + (b[i] - v) * clamped));
+}
+
+function survivalCellColor(s) {
+  const red = [248, 81, 73];
+  const amber = [210, 153, 34];
+  const green = [63, 185, 80];
+  const rgb = s < 0.70
+    ? mixRgb(red, amber, s / 0.70)
+    : mixRgb(amber, green, (s - 0.70) / 0.30);
+  return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+}
+
+function summaryPill(label, value) {
+  return `
+    <div class="summary-pill">
+      <div class="summary-pill-label">${label}</div>
+      <div class="summary-pill-value">${value}</div>
+    </div>
+  `;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1610,6 +1813,376 @@ function updatePortfolioChart(stats) {
       type: 'line', data: { labels, datasets }, options: opts,
       plugins: [verticalLinesPlugin],
     });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Feasibility heatmap
+// ─────────────────────────────────────────────────────────────────────────────
+function heatmapRunCount() {
+  if (cfg.simulationMethod === 'deterministic') return 1;
+  return Math.min(
+    HEATMAP_MAX_RUNS,
+    Math.max(HEATMAP_MIN_RUNS, Math.round((cfg.mcRuns ?? DEFAULT.mcRuns) / 3))
+  );
+}
+
+function heatmapAges() {
+  const horizonMax = cfg.nathanAge + cfg.years - 1;
+  const ages = new Set();
+  HEATMAP_OFFSETS.forEach(offset => {
+    ages.add(Math.round(clamp(cfg.retireNathanAge + offset, cfg.nathanAge, horizonMax)));
+  });
+  ages.add(cfg.retireNathanAge);
+  return [...ages].sort((a, b) => a - b);
+}
+
+function heatmapSpendingLevels() {
+  const currentRetirementSpend = cfg.baseSpending * cfg.retirementSpendingFraction;
+  return HEATMAP_SPEND_FACTORS.map(factor => {
+    const targetAnnual = currentRetirementSpend * factor;
+    const fraction = clamp(targetAnnual / Math.max(1, cfg.baseSpending), 0.50, 1.30);
+    return {
+      factor,
+      fraction,
+      annual: cfg.baseSpending * fraction,
+    };
+  });
+}
+
+function updateFeasibilityHeatmap() {
+  const shell = document.getElementById('feasibility-heatmap');
+  if (!shell) return;
+
+  const ages = heatmapAges();
+  const spendingLevels = heatmapSpendingLevels();
+  const runs = heatmapRunCount();
+  const spouseOffset = cfg.retireTanyaAge - cfg.retireNathanAge;
+
+  const rows = spendingLevels.map(level => {
+    const cells = ages.map(age => {
+      const candidate = {
+        ...cfg,
+        retireNathanAge: age,
+        retireTanyaAge: hasSpouse(cfg) ? Math.max(cfg.tanyaAge, age + spouseOffset) : age,
+        retirementSpendingFraction: level.fraction,
+        mcRuns: runs,
+      };
+      const stats = runMonteCarlo(candidate, { mcRuns: runs });
+      return {
+        age,
+        level,
+        survival: stats.survival,
+        retirePortfolio: stats.portAtRetire?.p50 ?? 0,
+      };
+    });
+    return { level, cells };
+  });
+
+  const isCurrentCell = (cell) =>
+    cell.age === cfg.retireNathanAge && Math.abs(cell.level.factor - 1) < 0.001;
+
+  const header = `
+    <div class="heatmap-corner">Spend / retire age</div>
+    ${ages.map(age => `<div class="heatmap-col-label">Age ${age}</div>`).join('')}
+  `;
+
+  const body = rows.map(row => `
+    <div class="heatmap-row-label">${fmtM(row.level.annual)} / yr</div>
+    ${row.cells.map(cell => {
+      const pctValue = Math.round(cell.survival * 100);
+      const title = [
+        `Retire at ${cell.age}`,
+        `Retirement spend ${fmtM(cell.level.annual)} / year`,
+        `Survival ${pctValue}%`,
+        `Median at retirement ${fmtM(cell.retirePortfolio)}`,
+      ].join(' | ');
+      return `
+        <div
+          class="heatmap-cell ${isCurrentCell(cell) ? 'current' : ''}"
+          style="background:${survivalCellColor(cell.survival)};color:${cell.survival < 0.42 ? '#fff' : '#0d1117'}"
+          title="${title}"
+          aria-label="${title}"
+        >${pctValue}%</div>
+      `;
+    }).join('')}
+  `).join('');
+
+  shell.innerHTML = `
+    <div class="heatmap-grid" style="--cols:${ages.length}">
+      ${header}
+      ${body}
+    </div>
+  `;
+
+  const sub = document.getElementById('feasibility-sub');
+  if (sub) {
+    sub.textContent = `${methodLabel(cfg.simulationMethod)} survival probability, ${runs} run${runs === 1 ? '' : 's'} per cell`;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Historical cohort replay
+// ─────────────────────────────────────────────────────────────────────────────
+function runHistoricalCohorts(c) {
+  const years = Math.min(c.years, HIST_EQ_RETURNS.length);
+  const lastStartIndex = Math.max(0, HIST_EQ_RETURNS.length - years);
+  const bdReal = c.bondReturnNominal - c.inflation;
+  const rc = {
+    ...c,
+    years,
+    equityReturnReal: HIST_EQ_MEAN,
+    bondReturnReal: bdReal,
+  };
+
+  return Array.from({ length: lastStartIndex + 1 }, (_, startIndex) => {
+    const path = simulateOne(rc, makeHistoricalSequenceRng(startIndex));
+    const final = path[path.length - 1]?.portfolio ?? 0;
+    return {
+      startIndex,
+      startYear: HIST_START_YEAR + startIndex,
+      endYear: HIST_START_YEAR + startIndex + years - 1,
+      path,
+      final,
+      survived: final > 0,
+    };
+  });
+}
+
+function depletionAge(path) {
+  const depleted = path.find(p => p.retired && p.portfolio <= 0);
+  return depleted?.age ?? null;
+}
+
+function updateHistoricalCohortChart() {
+  const cohorts = runHistoricalCohorts(cfg);
+  const summary = document.getElementById('cohort-summary');
+  const sub = document.getElementById('cohort-sub');
+
+  if (!cohorts.length) {
+    if (summary) summary.innerHTML = '<div class="empty-state">No historical cohorts available for this horizon.</div>';
+    return;
+  }
+
+  const sorted = [...cohorts].sort((a, b) => a.final - b.final);
+  const worst = sorted[0];
+  const best = sorted[sorted.length - 1];
+  const median = sorted[Math.floor(sorted.length / 2)];
+  const survival = cohorts.filter(c => c.survived).length / cohorts.length;
+  const lastStartYear = cohorts[cohorts.length - 1].startYear;
+
+  if (sub) {
+    sub.textContent = `${cohorts.length} start years, ${HIST_START_YEAR}-${lastStartYear}, replayed through ${Math.min(cfg.years, HIST_EQ_RETURNS.length)} years`;
+  }
+  if (summary) {
+    const worstAge = depletionAge(worst.path);
+    summary.innerHTML = [
+      summaryPill('Cohort survival', `${Math.round(survival * 100)}%`),
+      summaryPill('Worst start', `${worst.startYear}${worstAge ? `, age ${worstAge}` : ''}`),
+      summaryPill('Median final', fmtM(median.final)),
+      summaryPill('Best start', `${best.startYear}, ${fmtM(best.final)}`),
+    ].join('');
+  }
+
+  const labels = cohorts[0].path.map(p => p.age);
+  const highlighted = new Map([
+    [worst.startYear, { color: SPEND_CLR, width: 2.8, label: `${worst.startYear} worst` }],
+    [median.startYear, { color: ACCENT, width: 2.4, label: `${median.startYear} median` }],
+    [best.startYear, { color: INCOME_CLR, width: 2.8, label: `${best.startYear} best` }],
+  ]);
+
+  const datasets = [
+    ...cohorts
+      .filter(cohort => !highlighted.has(cohort.startYear))
+      .map(cohort => ({
+        label: String(cohort.startYear),
+        data: cohort.path.map(p => p.portfolio),
+        borderColor: 'rgba(139,148,158,0.20)',
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.18,
+      })),
+    ...cohorts
+      .filter(cohort => highlighted.has(cohort.startYear))
+      .map(cohort => {
+        const style = highlighted.get(cohort.startYear);
+        return {
+          label: style.label,
+          data: cohort.path.map(p => p.portfolio),
+          borderColor: style.color,
+          borderWidth: style.width,
+          pointRadius: 0,
+          tension: 0.18,
+        };
+      }),
+  ];
+
+  const cohortByLabel = new Map(cohorts.map(cohort => [String(cohort.startYear), cohort]));
+  highlighted.forEach((_, startYear) => {
+    const cohort = cohortByLabel.get(String(startYear));
+    if (cohort) cohortByLabel.set(`${startYear} ${highlighted.get(startYear).label.split(' ')[1]}`, cohort);
+  });
+
+  const opts = {
+    ...baseChartOpts(v => fmtM(v)),
+    plugins: {
+      legend: { display: true, labels: { color: TEXT_COLOR, boxWidth: 18, padding: 12, font: { size: 11 },
+        filter: item => item.text.includes('worst') || item.text.includes('median') || item.text.includes('best') } },
+      tooltip: {
+        backgroundColor: '#21262d', borderColor: '#30363d', borderWidth: 1,
+        titleColor: '#e6edf3', bodyColor: '#8b949e', padding: 10,
+        callbacks: {
+          title: items => `${primaryName()} age ${labels[items[0].dataIndex]}`,
+          label: item => {
+            const startYear = String(item.dataset.label).split(' ')[0];
+            const cohort = cohortByLabel.get(startYear);
+            const final = cohort ? `, final ${fmtM(cohort.final)}` : '';
+            return `${item.dataset.label}: ${fmtM(item.raw)}${final}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: { grid: { color: GRID_COLOR }, ticks: { color: TEXT_COLOR, maxTicksLimit: 14,
+             callback: (_, i) => labels[i] } },
+      y: { grid: { color: GRID_COLOR }, ticks: { color: TEXT_COLOR, callback: v => fmtM(v) } },
+    },
+  };
+
+  const data = { labels, datasets };
+  if (cohortChart) {
+    cohortChart.data = data;
+    cohortChart.options = opts;
+    cohortChart.update('none');
+  } else {
+    const ctx = document.getElementById('cohort-chart').getContext('2d');
+    cohortChart = new Chart(ctx, { type: 'line', data, options: opts });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Guardrail lifestyle variability
+// ─────────────────────────────────────────────────────────────────────────────
+function lifestyleSeries(stats) {
+  return Array.from({ length: cfg.years }, (_, t) => {
+    const vals = stats.allPaths
+      .map(path => path[t]?.lifestyleRatio)
+      .filter(v => Number.isFinite(v));
+    if (!vals.length) return null;
+    return {
+      age: cfg.nathanAge + t,
+      p10: pct(vals, 0.10), p25: pct(vals, 0.25), p50: pct(vals, 0.50),
+      p75: pct(vals, 0.75), p90: pct(vals, 0.90),
+    };
+  }).filter(Boolean);
+}
+
+function lifestylePathStats(stats) {
+  return stats.allPaths.map(path => {
+    const retired = path.filter(p => p.retired && Number.isFinite(p.lifestyleRatio));
+    if (!retired.length) return null;
+    const ratios = retired.map(p => p.lifestyleRatio);
+    return {
+      cutYears: ratios.filter(v => v < 0.995).length,
+      raiseYears: ratios.filter(v => v > 1.005).length,
+      floorYears: ratios.filter(v => v <= cfg.spendingFloor + 0.005).length,
+      minRatio: Math.min(...ratios),
+    };
+  }).filter(Boolean);
+}
+
+function updateLifestyleChart(stats) {
+  const summary = document.getElementById('lifestyle-summary');
+  const sub = document.getElementById('lifestyle-sub');
+  const analysisStats = cfg.withdrawalStrategy === 'guardrails'
+    ? stats
+    : runMonteCarlo({ ...cfg, withdrawalStrategy: 'guardrails' });
+  const series = lifestyleSeries(analysisStats);
+  const pathStats = lifestylePathStats(analysisStats);
+
+  if (sub) {
+    sub.textContent = cfg.withdrawalStrategy === 'guardrails'
+      ? 'Guardrail-adjusted lifestyle spending as share of baseline retirement budget'
+      : `Guardrails applied to current plan; selected strategy remains ${strategyLabel(cfg.withdrawalStrategy)}`;
+  }
+
+  if (!series.length || !pathStats.length) {
+    if (summary) summary.innerHTML = '<div class="empty-state">No retired years fall inside this simulation horizon.</div>';
+    if (lifestyleChart) {
+      lifestyleChart.destroy();
+      lifestyleChart = null;
+    }
+    return;
+  }
+
+  const cutChance = pathStats.filter(p => p.cutYears > 0).length / pathStats.length;
+  const cutYears = pathStats.map(p => p.cutYears);
+  const raiseYears = pathStats.map(p => p.raiseYears);
+  const floorYears = pathStats.map(p => p.floorYears);
+  const minRatios = pathStats.map(p => p.minRatio);
+
+  if (summary) {
+    summary.innerHTML = [
+      summaryPill('Chance of cuts', `${Math.round(cutChance * 100)}%`),
+      summaryPill('Median cut years', `${Math.round(pct(cutYears, 0.50))}`),
+      summaryPill('P10 lowest spend', `${Math.round(pct(minRatios, 0.10) * 100)}%`),
+      summaryPill('P90 floor/depleted', `${Math.round(pct(floorYears, 0.90))}`),
+      summaryPill('Median raise years', `${Math.round(pct(raiseYears, 0.50))}`),
+    ].join('');
+  }
+
+  const labels = series.map(p => p.age);
+  const datasets = [
+    { label: 'P10', data: series.map(p => p.p10),
+      borderColor: 'transparent', pointRadius: 0, tension: 0.25, fill: false },
+    { label: 'P90', data: series.map(p => p.p90),
+      borderColor: 'transparent', pointRadius: 0, tension: 0.25,
+      fill: { target: 0, above: 'rgba(63,185,80,0.11)', below: 'transparent' },
+      backgroundColor: 'rgba(63,185,80,0.11)' },
+    { label: 'P25', data: series.map(p => p.p25),
+      borderColor: 'transparent', pointRadius: 0, tension: 0.25, fill: false },
+    { label: 'P75', data: series.map(p => p.p75),
+      borderColor: 'transparent', pointRadius: 0, tension: 0.25,
+      fill: { target: 2, above: 'rgba(63,185,80,0.25)', below: 'transparent' },
+      backgroundColor: 'rgba(63,185,80,0.25)' },
+    { label: 'Median', data: series.map(p => p.p50),
+      borderColor: INCOME_CLR, borderWidth: 2.5, pointRadius: 0, tension: 0.25 },
+    { label: 'Baseline', data: series.map(() => 1),
+      borderColor: WARN_CLR, borderWidth: 1.5, pointRadius: 0, tension: 0,
+      borderDash: [4, 4] },
+  ];
+
+  const opts = {
+    ...baseChartOpts(v => `${Math.round(v * 100)}%`),
+    plugins: {
+      legend: { display: true, labels: { color: TEXT_COLOR, boxWidth: 12, padding: 14, font: { size: 11 },
+        filter: item => !['P10','P25'].includes(item.text) } },
+      tooltip: {
+        backgroundColor: '#21262d', borderColor: '#30363d', borderWidth: 1,
+        titleColor: '#e6edf3', bodyColor: '#8b949e', padding: 10,
+        filter: item => !['P10','P25'].includes(item.dataset.label),
+        callbacks: {
+          title: items => `${primaryName()} age ${labels[items[0].dataIndex]}`,
+          label: item => `${item.dataset.label}: ${Math.round(item.raw * 100)}%`,
+        },
+      },
+    },
+    scales: {
+      x: { grid: { color: GRID_COLOR }, ticks: { color: TEXT_COLOR, maxTicksLimit: 14,
+             callback: (_, i) => labels[i] } },
+      y: { min: 0, grid: { color: GRID_COLOR },
+           ticks: { color: TEXT_COLOR, callback: v => `${Math.round(v * 100)}%` } },
+    },
+  };
+
+  const data = { labels, datasets };
+  if (lifestyleChart) {
+    lifestyleChart.data = data;
+    lifestyleChart.options = opts;
+    lifestyleChart.update('none');
+  } else {
+    const ctx = document.getElementById('lifestyle-chart').getContext('2d');
+    lifestyleChart = new Chart(ctx, { type: 'line', data, options: opts });
   }
 }
 
@@ -1905,7 +2478,13 @@ function renderScenarioGrid(customStats) {
   if (!scenarioCache) {
     scenarioCache = COMPARISON_PRESETS.map(p => {
       const sc = runMonteCarlo(buildScenarioCfg(p));
-      return { label: p.label, ...sc };
+      return {
+        label: p.label,
+        survival: sc.survival,
+        portAtRetire: sc.portAtRetire,
+        portAt70: sc.portAt70,
+        required: sc.required,
+      };
     });
   }
 
@@ -1985,12 +2564,15 @@ function doRender() {
     const stats = runMonteCarlo(cfg);
     updateMetrics(stats);
     updatePortfolioChart(stats);
+    updateHistoricalCohortChart();
+    updateLifestyleChart(stats);
     updateCashflowChart(stats.medianPath);
     updateDistChart(stats.finalVals);
     updateGuardrailsInsight(stats);
 
     // Lazy compute scenario grid (computed once then cached, only custom updates)
     setTimeout(() => {
+      updateFeasibilityHeatmap();
       renderScenarioGrid(stats);
       document.getElementById('computing').classList.remove('show');
     }, 0);
@@ -2144,6 +2726,9 @@ const TOOLTIPS = {
   'm-required': 'Constant-dollar retirement spending divided by the chosen SWR threshold.',
   'm-fire': 'First retired year where the median path meets the Required to Retire threshold.',
   'portfolio-chart': 'Portfolio percentile bands across all outcomes for the selected return model.',
+  'feasibility-card': 'Survival probability grid across nearby retirement ages and retirement spending levels.',
+  'cohort-chart': 'Actual historical return sequences replayed from each valid start year.',
+  'lifestyle-chart': 'Distribution of retirement lifestyle spending relative to the baseline retirement budget.',
   'cashflow-chart': 'Median-path income, spending, and net savings through time.',
   'dist-chart': 'Distribution of ending portfolio balances across simulated outcomes.',
   'scenario-grid': 'Preset comparison cards recomputed with the same profile defaults.',
