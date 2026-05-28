@@ -577,6 +577,11 @@
           <button type="button" class="yaml-btn" id="resetYaml">Reset</button>
           <button type="button" class="yaml-btn" id="copyYaml">Copy</button>
         </div>
+        <div class="yaml-actions">
+          <input type="file" id="profileFileInput" accept=".yaml,.yml" style="display:none" aria-hidden="true">
+          <button type="button" class="yaml-btn" id="loadProfile">Load file</button>
+          <button type="button" class="yaml-btn" id="downloadProfile">Download</button>
+        </div>
         <div class="yaml-status" id="yamlStatus" aria-live="polite"></div>
       </div>
     </div>
@@ -2215,6 +2220,66 @@ function stringOrDefault(c, key, fallback = '') {
   return text.trim() ? text : fallback;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Profile persistence (localStorage + file I/O)
+// ─────────────────────────────────────────────────────────────────────────────
+const PROFILE_STORAGE_KEY = 'retirement-simulator-profile-v1';
+
+function saveProfileToStorage() {
+  const textarea = document.getElementById('yamlSettings');
+  if (!textarea?.value) return;
+  try { window.localStorage.setItem(PROFILE_STORAGE_KEY, textarea.value); } catch {}
+}
+
+function loadProfileFromStorage() {
+  try {
+    const saved = window.localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (!saved) return false;
+    const textarea = document.getElementById('yamlSettings');
+    if (!textarea) return false;
+    textarea.value = saved;
+    applyYamlSettings();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function loadProfileFromText(text) {
+  const textarea = document.getElementById('yamlSettings');
+  if (!textarea) return;
+  textarea.value = text;
+  applyYamlSettings();
+}
+
+function downloadProfile() {
+  const textarea = document.getElementById('yamlSettings');
+  if (!textarea?.value) return;
+  const blob = new Blob([textarea.value], { type: 'text/yaml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'profile.yaml';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+function bindDragDrop() {
+  document.addEventListener('dragover', (e) => {
+    if (e.dataTransfer?.items && [...e.dataTransfer.items].some(i => i.kind === 'file')) e.preventDefault();
+  });
+  document.addEventListener('drop', (e) => {
+    const file = [...e.dataTransfer.files].find(
+      f => f.name.endsWith('.yaml') || f.name.endsWith('.yml')
+    );
+    if (!file) return;
+    e.preventDefault();
+    const reader = new FileReader();
+    reader.onload = (ev) => loadProfileFromText(String(ev.target?.result ?? ''));
+    reader.readAsText(file);
+  });
+}
+
 function cfgToProfileYaml(c = cfg) {
   const spouse = hasSpouse(c)
     ? {
@@ -2484,6 +2549,7 @@ function syncYamlFromCfg(message = '') {
   });
   yamlDirty = false;
   setYamlStatus(message, message ? 'ok' : '');
+  saveProfileToStorage();
 }
 
 function applyYamlSettings() {
@@ -2501,6 +2567,7 @@ function applyYamlSettings() {
     updateScenarioButtonStates();
     scheduleRender();
     setYamlStatus('Applied YAML', 'ok');
+    saveProfileToStorage();
   } catch (err) {
     setYamlStatus(err?.message ?? String(err), 'error');
   }
@@ -2534,6 +2601,18 @@ function bindYamlEditor() {
   document.getElementById('copyYaml')?.addEventListener('click', () => {
     copyYamlSettings();
   });
+  document.getElementById('loadProfile')?.addEventListener('click', () => {
+    document.getElementById('profileFileInput')?.click();
+  });
+  document.getElementById('profileFileInput')?.addEventListener('change', (e) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => loadProfileFromText(String(ev.target?.result ?? ''));
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+  document.getElementById('downloadProfile')?.addEventListener('click', downloadProfile);
 }
 
 function bindInputs() {
@@ -2750,8 +2829,11 @@ document.addEventListener('DOMContentLoaded', () => {
   bindSidebarToggle();
   bindYamlEditor();
   bindInputs();
-  syncUIFromCfg();
-  scheduleRender();
+  bindDragDrop();
+  if (!loadProfileFromStorage()) {
+    syncUIFromCfg();
+    scheduleRender();
+  }
 });
 </script>
 </body>
