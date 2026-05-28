@@ -3,6 +3,7 @@
 A self-contained Monte Carlo retirement simulator that runs entirely in your browser.
 
 **[Open the simulator →](https://nbellowe.github.io/retirement-simulator)**
+**[Read the docs →](https://nbellowe.github.io/retirement-simulator/docs/)**
 
 ## Usage
 
@@ -28,3 +29,13 @@ A self-contained Monte Carlo retirement simulator that runs entirely in your bro
 ## Privacy
 
 All computation runs client-side. Your profile data never leaves your browser.
+
+## Development
+
+```bash
+npm install
+npm run dev      # dev server at localhost:5173/retirement-simulator/
+npm run build    # produces dist/
+```
+
+See `CLAUDE.md` for architecture details.
