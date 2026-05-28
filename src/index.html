@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Retirement Simulator</title>
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Retirement Simulator</div>
+    <div class="header-sub" id="header-sub">Person 1 · Real (inflation-adjusted) dollars</div>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-controls="sidebar" aria-expanded="true">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <rect x="2" y="3" width="12" height="10" rx="2"/>
+        <path d="M6 3v10"/>
+      </svg>
+      <span id="sidebar-toggle-text">Hide controls</span>
+    </button>
+    <div class="header-badge" id="mc-badge">300 Monte Carlo runs</div>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- ── SIDEBAR ─────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+
+  <!-- Preset Scenarios -->
+  <div class="sidebar-section">
+    <div class="section-header open" data-section="presets">
+      <span>Quick Scenarios</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body" id="sb-presets">
+      <div class="preset-grid" id="preset-grid"></div>
+    </div>
+  </div>
+
+  <!-- YAML Settings -->
+  <div class="sidebar-section">
+    <div class="section-header" data-section="yaml">
+      <span>YAML Settings</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body hidden" id="sb-yaml">
+      <div class="control-group" id="yamlSettingsGroup">
+        <textarea class="yaml-textarea" id="yamlSettings" spellcheck="false" aria-label="YAML settings"></textarea>
+        <div class="yaml-actions">
+          <button type="button" class="yaml-btn primary" id="applyYaml">Apply YAML</button>
+          <button type="button" class="yaml-btn" id="resetYaml">Reset</button>
+          <button type="button" class="yaml-btn" id="copyYaml">Copy</button>
+        </div>
+        <div class="yaml-actions">
+          <input type="file" id="profileFileInput" accept=".yaml,.yml" style="display:none" aria-hidden="true">
+          <button type="button" class="yaml-btn" id="loadProfile">Load file</button>
+          <button type="button" class="yaml-btn" id="downloadProfile">Download</button>
+        </div>
+        <div class="yaml-status" id="yamlStatus" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ages & Retirement -->
+  <div class="sidebar-section">
+    <div class="section-header open" data-section="ages">
+      <span>Ages &amp; Retirement</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body" id="sb-ages">
+      <div class="control-group">
+        <div class="control-label"><span>Primary person name</span></div>
+        <input class="control-input" type="text" id="person1Name" value="Person 1" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span><span data-person1>Person 1</span> current age</span><span class="control-val" id="v-nathanAge">35</span></div>
+        <input type="range" id="nathanAge" min="18" max="80" step="1" value="35" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span><span data-person1>Person 1</span> retires at age</span><span class="control-val" id="v-retireNathanAge">55</span></div>
+        <input type="range" id="retireNathanAge" min="35" max="85" step="1" value="55" />
+      </div>
+      <div class="toggle-row">
+        <label class="toggle-label">
+          <input type="checkbox" id="hasSpouse" />
+          <span class="toggle-switch"></span>
+          Include spouse/partner
+        </label>
+      </div>
+      <div class="control-group" data-spouse-only>
+        <div class="control-label"><span>Spouse/partner name</span></div>
+        <input class="control-input" type="text" id="person2Name" value="Person 2" />
+      </div>
+      <div class="control-group" data-spouse-only>
+        <div class="control-label"><span><span data-person2>Person 2</span> current age</span><span class="control-val" id="v-tanyaAge">37</span></div>
+        <input type="range" id="tanyaAge" min="18" max="80" step="1" value="37" />
+      </div>
+      <div class="control-group" data-spouse-only>
+        <div class="control-label"><span><span data-person2>Person 2</span> retires at age</span><span class="control-val" id="v-retireTanyaAge">57</span></div>
+        <input type="range" id="retireTanyaAge" min="35" max="85" step="1" value="57" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Portfolio -->
+  <div class="sidebar-section">
+    <div class="section-header open" data-section="portfolio">
+      <span>Portfolio</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body" id="sb-portfolio">
+      <div class="control-group">
+        <div class="control-label"><span>Starting portfolio</span><span class="control-val" id="v-portfolioTotal">$10.4M</span></div>
+        <input type="range" id="portfolioTotal" min="0" max="20000000" step="100000" value="500000" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Safe withdrawal rate <span style="color:var(--muted);font-weight:400">(planning target only)</span></span><span class="control-val" id="v-swr">4.0%</span></div>
+        <input type="range" id="swr" min="0.025" max="0.06" step="0.0025" value="0.04" />
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Sets the "Required to Retire" threshold — not actual spending. Use the Spending sliders to change what you withdraw.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Income -->
+  <div class="sidebar-section">
+    <div class="section-header" data-section="income">
+      <span>Income</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body hidden" id="sb-income">
+      <div class="control-group">
+        <div class="control-label"><span><span data-person1>Person 1</span> base salary</span><span class="control-val" id="v-nathanSalaryBase">$120k</span></div>
+        <input type="range" id="nathanSalaryBase" min="0" max="600000" step="10000" value="120000" />
+      </div>
+      <div class="control-group" data-spouse-only>
+        <div class="control-label"><span><span data-person2>Person 2</span> base salary</span><span class="control-val" id="v-tanyaSalaryBase">$0</span></div>
+        <input type="range" id="tanyaSalaryBase" min="0" max="600000" step="10000" value="0" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span><span data-person1>Person 1</span> RSUs / year</span><span class="control-val" id="v-nathanRsuAnnual">$0</span></div>
+        <input type="range" id="nathanRsuAnnual" min="0" max="600000" step="10000" value="0" />
+      </div>
+      <div class="control-group" data-spouse-only>
+        <div class="control-label"><span><span data-person2>Person 2</span> RSUs / year</span><span class="control-val" id="v-tanyaRsuAnnual">$0</span></div>
+        <input type="range" id="tanyaRsuAnnual" min="0" max="600000" step="10000" value="0" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>RSU vesting years</span><span class="control-val" id="v-rsuVestingYears">4</span></div>
+        <input type="range" id="rsuVestingYears" min="1" max="8" step="1" value="4" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Real income growth</span><span class="control-val" id="v-incomeGrowthReal">2.0%</span></div>
+        <input type="range" id="incomeGrowthReal" min="-0.02" max="0.08" step="0.005" value="0.02" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Effective tax rate</span><span class="control-val" id="v-effectiveIncomeTax">28%</span></div>
+        <input type="range" id="effectiveIncomeTax" min="0.10" max="0.50" step="0.01" value="0.28" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Spending -->
+  <div class="sidebar-section">
+    <div class="section-header open" data-section="spending">
+      <span>Spending</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body" id="sb-spending">
+      <div class="control-group">
+        <div class="control-label"><span>Annual spending (working years)</span><span class="control-val" id="v-baseSpending">$150k</span></div>
+        <input type="range" id="baseSpending" min="50000" max="400000" step="5000" value="150000" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Retirement spending (% of above)</span><span class="control-val" id="v-retirementSpendingFraction">85%</span></div>
+        <input type="range" id="retirementSpendingFraction" min="0.50" max="1.30" step="0.05" value="0.85" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Real spending growth</span><span class="control-val" id="v-spendingGrowthReal">0.5%</span></div>
+        <input type="range" id="spendingGrowthReal" min="-0.02" max="0.05" step="0.005" value="0.005" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Kids -->
+  <div class="sidebar-section">
+    <div class="section-header open" data-section="kids">
+      <span>Kids</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body" id="sb-kids">
+      <div class="control-group">
+        <div class="control-label"><span>Number of kids</span><span class="control-val" id="v-numKids">1</span></div>
+        <input type="range" id="numKids" min="0" max="3" step="1" value="1" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Years until first child</span><span class="control-val" id="v-firstKidYear">0</span></div>
+        <input type="range" id="firstKidYear" min="0" max="20" step="1" value="0" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Childcare / kid / year (ages 0–5)</span><span class="control-val" id="v-childcareAnnual">$25k</span></div>
+        <input type="range" id="childcareAnnual" min="0" max="60000" step="1000" value="25000" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>K–12 incremental / kid / year</span><span class="control-val" id="v-k12Annual">$5k</span></div>
+        <input type="range" id="k12Annual" min="0" max="30000" step="500" value="5000" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>College contribution / kid</span><span class="control-val" id="v-collegeContribution">$50k</span></div>
+        <input type="range" id="collegeContribution" min="0" max="200000" step="5000" value="50000" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Housing -->
+  <div class="sidebar-section">
+    <div class="section-header" data-section="housing">
+      <span>Housing</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body hidden" id="sb-housing">
+      <div class="toggle-row">
+        <label class="toggle-label">
+          <input type="checkbox" id="upgradeHouse" />
+          <span class="toggle-switch"></span>
+          Include future home upgrade
+        </label>
+      </div>
+      <div id="housing-controls" class="guardrails-panel dim">
+        <div class="control-group">
+          <div class="control-label"><span>Upgrade year</span><span class="control-val" id="v-upgradeYear">5</span></div>
+          <input type="range" id="upgradeYear" min="0" max="30" step="1" value="5" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Additional upgrade cost</span><span class="control-val" id="v-upgradeAdditionalCost">$0</span></div>
+          <input type="range" id="upgradeAdditionalCost" min="0" max="2000000" step="50000" value="0" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Healthcare -->
+  <div class="sidebar-section">
+    <div class="section-header" data-section="healthcare">
+      <span>Healthcare</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body hidden" id="sb-healthcare">
+      <div class="control-group">
+        <div class="control-label"><span>Annual cost pre-Medicare (per yr)</span><span class="control-val" id="v-healthcareAnnual">$24k</span></div>
+        <input type="range" id="healthcareAnnual" min="0" max="60000" step="1000" value="24000" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Medicare starts at age</span><span class="control-val" id="v-medicareAge">65</span></div>
+        <input type="range" id="medicareAge" min="60" max="70" step="1" value="65" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Social Security -->
+  <div class="sidebar-section">
+    <div class="section-header" data-section="ss">
+      <span>Social Security</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body hidden" id="sb-ss">
+      <div class="control-group">
+        <div class="control-label"><span><span data-person1>Person 1</span> SS benefit / year</span><span class="control-val" id="v-ssNathanAnnual">$20k</span></div>
+        <input type="range" id="ssNathanAnnual" min="0" max="80000" step="1000" value="20000" />
+      </div>
+      <div class="control-group" data-spouse-only>
+        <div class="control-label"><span><span data-person2>Person 2</span> SS benefit / year</span><span class="control-val" id="v-ssTanyaAnnual">$0</span></div>
+        <input type="range" id="ssTanyaAnnual" min="0" max="80000" step="1000" value="0" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Claim age</span><span class="control-val" id="v-ssClaimAge">67</span></div>
+        <input type="range" id="ssClaimAge" min="62" max="70" step="1" value="67" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>SS income as % of estimate (uncertainty)</span><span class="control-val" id="v-ssReductionFactor">100%</span></div>
+        <input type="range" id="ssReductionFactor" min="0.50" max="1.00" step="0.05" value="1.00" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Market -->
+  <div class="sidebar-section">
+    <div class="section-header" data-section="market">
+      <span>Market &amp; Returns</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body hidden" id="sb-market">
+      <div class="control-group">
+        <div class="control-label"><span>Return model</span></div>
+        <select class="control-select" id="simulationMethod">
+          <option value="monte_carlo">Monte Carlo</option>
+          <option value="historical_bootstrap">Historical bootstrap</option>
+          <option value="deterministic">Deterministic expected returns</option>
+        </select>
+      </div>
+      <div id="hist-note" style="display:none;font-size:11px;color:var(--muted);margin-bottom:10px;padding:8px;background:rgba(167,139,250,0.07);border-radius:6px;border:1px solid rgba(167,139,250,0.2)">
+        Bootstraps from 96 actual annual real returns. Return sliders ignored for equity. Captures fat tails and real crash frequency.
+      </div>
+      <div id="mc-sliders">
+        <div class="control-group">
+          <div class="control-label"><span>Equity return (nominal)</span><span class="control-val" id="v-equityReturnNominal">9.0%</span></div>
+          <input type="range" id="equityReturnNominal" min="0.04" max="0.14" step="0.005" value="0.09" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Equity volatility (σ) — MC only</span><span class="control-val" id="v-equityStd">17%</span></div>
+          <input type="range" id="equityStd" min="0.05" max="0.35" step="0.01" value="0.17" />
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Bond return (nominal)</span><span class="control-val" id="v-bondReturnNominal">4.0%</span></div>
+        <input type="range" id="bondReturnNominal" min="0.00" max="0.08" step="0.005" value="0.04" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Inflation</span><span class="control-val" id="v-inflation">3.0%</span></div>
+        <input type="range" id="inflation" min="0.00" max="0.10" step="0.005" value="0.03" />
+        <div id="real-return-note" style="font-size:11px;color:var(--muted);margin-top:4px">
+          Real equity ≈ <span id="derived-eq-real">6.0%</span> · Real bonds ≈ <span id="derived-bd-real">1.0%</span>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Equity allocation (working)</span><span class="control-val" id="v-equityFractionWorking">85%</span></div>
+        <input type="range" id="equityFractionWorking" min="0.40" max="1.00" step="0.05" value="0.85" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Equity allocation (retired)</span><span class="control-val" id="v-equityFractionRetired">60%</span></div>
+        <input type="range" id="equityFractionRetired" min="0.20" max="0.90" step="0.05" value="0.60" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Simulation -->
+  <div class="sidebar-section">
+    <div class="section-header open" data-section="simulation">
+      <span>Simulation &amp; Withdrawals</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body" id="sb-simulation">
+      <div class="control-group">
+        <div class="control-label"><span>Withdrawal strategy</span></div>
+        <select class="control-select" id="withdrawalStrategy">
+          <option value="constant_dollar">Constant dollar</option>
+          <option value="percent_portfolio">Percent of portfolio</option>
+          <option value="one_over_n">1/N remaining years</option>
+          <option value="guardrails">Guardrails</option>
+          <option value="guyton_klinger">Guyton-Klinger</option>
+          <option value="vanguard_dynamic">Vanguard dynamic</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Withdrawal rate target</span><span class="control-val" id="v-withdrawalRate">4.0%</span></div>
+        <input type="range" id="withdrawalRate" min="0.02" max="0.08" step="0.0025" value="0.04" />
+      </div>
+      <div class="control-group">
+        <div class="control-label"><span>Simulation horizon</span><span class="control-val" id="v-years">70 years</span></div>
+        <input type="range" id="years" min="20" max="90" step="1" value="70" />
+      </div>
+      <div class="control-group" id="mc-runs-group">
+        <div class="control-label"><span>Simulation runs</span><span class="control-val" id="v-mcRuns">300</span></div>
+        <input type="range" id="mcRuns" min="50" max="2000" step="50" value="300" />
+      </div>
+      <div id="dynamic-spending-controls" class="guardrails-panel dim">
+        <div class="control-group">
+          <div class="control-label"><span>Max annual spending cut</span><span class="control-val" id="v-dynamicSpendingFloor">-2.5%</span></div>
+          <input type="range" id="dynamicSpendingFloor" min="-0.10" max="0" step="0.005" value="-0.025" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Max annual spending raise</span><span class="control-val" id="v-dynamicSpendingCeiling">5.0%</span></div>
+          <input type="range" id="dynamicSpendingCeiling" min="0" max="0.15" step="0.005" value="0.05" />
+        </div>
+      </div>
+      <div id="guyton-klinger-controls" class="guardrails-panel dim">
+        <div class="control-group">
+          <div class="control-label"><span>Capital preservation trigger</span><span class="control-val" id="v-gkCapitalPreservation">120%</span></div>
+          <input type="range" id="gkCapitalPreservation" min="1.05" max="1.50" step="0.05" value="1.20" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Prosperity trigger</span><span class="control-val" id="v-gkProsperity">80%</span></div>
+          <input type="range" id="gkProsperity" min="0.50" max="0.95" step="0.05" value="0.80" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Decision-rule adjustment</span><span class="control-val" id="v-gkAdjustment">10%</span></div>
+          <input type="range" id="gkAdjustment" min="0.05" max="0.25" step="0.05" value="0.10" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Capital preservation sunset</span><span class="control-val" id="v-gkSunsetYears">15 years</span></div>
+          <input type="range" id="gkSunsetYears" min="0" max="25" step="1" value="15" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guardrails / Flexible Spending -->
+  <div class="sidebar-section">
+    <div class="section-header open" data-section="guardrails">
+      <span>Guardrails</span>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </div>
+    <div class="section-body" id="sb-guardrails">
+      <div id="guardrails-controls" class="guardrails-panel dim">
+        <div class="control-group">
+          <div class="control-label"><span>Trigger: cut if withdrawal rate exceeds</span><span class="control-val" id="v-upperGuardrail">5.0%</span></div>
+          <input type="range" id="upperGuardrail" min="0.040" max="0.080" step="0.005" value="0.05" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Trigger: can increase if rate below</span><span class="control-val" id="v-lowerGuardrail">3.0%</span></div>
+          <input type="range" id="lowerGuardrail" min="0.015" max="0.040" step="0.005" value="0.03" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Adjustment size per trigger event</span><span class="control-val" id="v-guardrailCut">10%</span></div>
+          <input type="range" id="guardrailCut" min="0.05" max="0.25" step="0.05" value="0.10" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Hard spending floor (% of retirement base)</span><span class="control-val" id="v-spendingFloor">75%</span></div>
+          <input type="range" id="spendingFloor" min="0.50" max="0.95" step="0.05" value="0.75" />
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Hard spending ceiling (% of retirement base)</span><span class="control-val" id="v-spendingCeiling">120%</span></div>
+          <input type="range" id="spendingCeiling" min="1.00" max="1.50" step="0.05" value="1.20" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+</aside>
+
+<!-- ── MAIN ─────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Guardrails insight bar (shows when guardrails enabled) -->
+  <div class="guardrails-insight hidden" id="guardrails-insight">
+    <div>
+      <div class="g-label">Survival without guardrails</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text)" id="gi-without">—</div>
+    </div>
+    <div style="font-size:24px;color:var(--muted)">→</div>
+    <div>
+      <div class="g-label">With guardrails active</div>
+      <div class="g-diff" id="gi-with">—</div>
+    </div>
+    <div style="margin-left:auto;font-size:12px;color:var(--muted);max-width:280px">
+      Spending adjusts by <strong id="gi-cut">10%</strong> when guardrails trigger — never below
+      <strong id="gi-floor">75%</strong> of retirement baseline.
+    </div>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="metric-label">Survival Probability</div>
+      <div class="metric-value" id="m-survival" style="color:var(--success)">—</div>
+      <div class="metric-sub" id="m-survival-sub">to Person 1 age 101</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Portfolio at Retirement</div>
+      <div class="metric-value" id="m-port-retire">—</div>
+      <div class="metric-sub">median scenario (p50)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Portfolio at Age 70</div>
+      <div class="metric-value" id="m-port-70">—</div>
+      <div class="metric-sub">median scenario (p50)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Required to Retire</div>
+      <div class="metric-value" id="m-required">—</div>
+      <div class="metric-sub">at chosen SWR</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">FIRE Ready</div>
+      <div class="metric-value" id="m-fire">—</div>
+      <div class="metric-sub" id="m-fire-sub">Person 1's age when funded</div>
+    </div>
+  </div>
+
+  <!-- Portfolio trajectory chart -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Portfolio Trajectory</div>
+        <div class="chart-sub" id="portfolio-chart-sub">Monte Carlo percentile bands · median deterministic path highlighted</div>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item">
+          <span class="legend-line" style="background:var(--accent)"></span>Median
+        </span>
+        <span class="legend-item">
+          <span class="legend-band" style="background:rgba(167,139,250,0.35)"></span>P25–P75
+        </span>
+        <span class="legend-item">
+          <span class="legend-band" style="background:rgba(167,139,250,0.12)"></span>P10–P90
+        </span>
+      </div>
+    </div>
+    <canvas id="portfolio-chart"></canvas>
+  </div>
+
+  <!-- Feasibility Heatmap -->
+  <div class="chart-card" id="feasibility-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Retirement Feasibility Heatmap</div>
+        <div class="chart-sub" id="feasibility-sub">Survival probability by retirement age and retirement spending</div>
+      </div>
+    </div>
+    <div class="heatmap-shell" id="feasibility-heatmap">
+      <div class="empty-state">Computing feasibility map...</div>
+    </div>
+    <div class="heatmap-legend">
+      <span class="heatmap-legend-item"><span class="heatmap-swatch" style="background:#f85149"></span>&lt;70%</span>
+      <span class="heatmap-legend-item"><span class="heatmap-swatch" style="background:#d29922"></span>70-89%</span>
+      <span class="heatmap-legend-item"><span class="heatmap-swatch" style="background:#3fb950"></span>90%+</span>
+      <span class="heatmap-legend-item"><span class="heatmap-swatch" style="border:2px solid var(--accent);background:transparent"></span>Current settings</span>
+    </div>
+  </div>
+
+  <!-- Historical Cohort Replay -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Historical Cohort Replay</div>
+        <div class="chart-sub" id="cohort-sub">Every valid historical start year replayed as an actual return sequence</div>
+      </div>
+    </div>
+    <div class="derived-summary" id="cohort-summary"></div>
+    <canvas id="cohort-chart"></canvas>
+  </div>
+
+  <!-- Guardrail Lifestyle Variability -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Guardrail Lifestyle Variability</div>
+        <div class="chart-sub" id="lifestyle-sub">Retirement lifestyle spending as a share of the baseline retirement budget</div>
+      </div>
+    </div>
+    <div class="derived-summary" id="lifestyle-summary"></div>
+    <canvas id="lifestyle-chart"></canvas>
+  </div>
+
+  <!-- Cashflow + Distribution row -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Annual Income vs. Spending</div>
+          <div class="chart-sub">Deterministic median path · every 2 years</div>
+        </div>
+      </div>
+      <canvas id="cashflow-chart"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Final Portfolio Distribution</div>
+          <div class="chart-sub" id="dist-chart-sub">Person 1 age 101 · all outcomes</div>
+        </div>
+      </div>
+      <canvas id="dist-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Scenario Comparison -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Scenario Comparison</div>
+        <div class="chart-sub">Current settings vs. preset scenarios</div>
+      </div>
+    </div>
+    <div class="scenario-grid" id="scenario-grid">
+      <div class="scenario-card" style="opacity:0.4;text-align:center;padding:40px">Computing…</div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<div class="computing" id="computing">
+  <div class="spinner"></div>
+  <span>Simulating…</span>
+</div>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
