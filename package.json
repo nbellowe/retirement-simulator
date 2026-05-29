@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "test": "node test/benchmark.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "docs:serve": "mkdocs serve",

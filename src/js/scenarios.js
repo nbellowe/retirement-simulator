@@ -18,7 +18,7 @@ const SCENARIO_GROUPS = [
     tooltip: 'Choose how annual returns are generated without changing any other assumptions.',
     options: [
       { label: 'Monte Carlo', tooltip: 'Randomly samples returns from the configured expected return and volatility.', cfg: { simulationMethod: 'monte_carlo' } },
-      { label: 'Historical', tooltip: 'Bootstraps returns from the historical real-return table.', cfg: { simulationMethod: 'historical_bootstrap' } },
+      { label: 'Historical', tooltip: 'Backtests against actual 1928–2024 return sequences.', cfg: { simulationMethod: 'historical_sequence' } },
       { label: 'Deterministic', tooltip: 'Runs one expected-return path with no random variation.', cfg: { simulationMethod: 'deterministic' } },
     ],
   },
@@ -86,7 +86,7 @@ const COMPARISON_PRESETS = [
   { label: 'Lean Spend', cfg: () => ({ baseSpending: DEFAULT.baseSpending * 0.85, retirementSpendingFraction: Math.max(0.5, DEFAULT.retirementSpendingFraction - 0.10) }) },
   { label: 'High Spend', cfg: () => ({ baseSpending: DEFAULT.baseSpending * 1.15, retirementSpendingFraction: Math.min(1.3, DEFAULT.retirementSpendingFraction + 0.10) }) },
   { label: 'Guyton-Klinger', cfg: { withdrawalStrategy: 'guyton_klinger', withdrawalRate: 0.04 } },
-  { label: 'Historical', cfg: { simulationMethod: 'historical_bootstrap' } },
+  { label: 'Historical', cfg: { simulationMethod: 'historical_sequence' } },
   { label: 'Bear Market', cfg: { equityReturnNominal: 0.07, equityStd: 0.20, bondReturnNominal: 0.03, inflation: 0.04 } },
 ];
 
