@@ -90,7 +90,7 @@ const RANGE_FIELDS = Object.keys(FORMATS);
 const TEXT_FIELDS = ['person1Name', 'person2Name'];
 const SELECT_FIELDS = ['simulationMethod', 'withdrawalStrategy'];
 const CHECKBOX_FIELDS = ['hasSpouse', 'upgradeHouse'];
-const SIMULATION_METHODS = ['monte_carlo', 'historical_bootstrap', 'deterministic'];
+const SIMULATION_METHODS = ['monte_carlo', 'historical_sequence', 'historical_bootstrap', 'deterministic'];
 const WITHDRAWAL_STRATEGIES = [
   'constant_dollar',
   'percent_portfolio',
@@ -141,7 +141,7 @@ const TOOLTIPS = {
   ssTanyaAnnual: 'Spouse or partner annual Social Security benefit at the selected claim age.',
   ssClaimAge: 'Age when Social Security income begins.',
   ssReductionFactor: 'Haircut applied to Social Security estimates.',
-  simulationMethod: 'Return engine: random Monte Carlo, historical bootstrap, or a deterministic expected-return path.',
+  simulationMethod: 'Return engine: random Monte Carlo, historical sequence (backtest replaying each start year), historical bootstrap (resampled years), or a deterministic expected-return path.',
   equityReturnNominal: 'Expected annual stock return before inflation in Monte Carlo and deterministic modes.',
   equityStd: 'Stock return volatility used by Monte Carlo mode.',
   bondReturnNominal: 'Expected annual bond return before inflation.',
@@ -732,7 +732,8 @@ function normalizeConfigBounds() {
 }
 
 function updatePanelState() {
-  const historical = cfg.simulationMethod === 'historical_bootstrap';
+  const historical = cfg.simulationMethod === 'historical_bootstrap'
+                  || cfg.simulationMethod === 'historical_sequence';
   const deterministic = cfg.simulationMethod === 'deterministic';
   const guardrails = cfg.withdrawalStrategy === 'guardrails';
   const dynamic = cfg.withdrawalStrategy === 'vanguard_dynamic';

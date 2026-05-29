@@ -322,12 +322,13 @@
         <div class="control-label"><span>Return model</span></div>
         <select class="control-select" id="simulationMethod">
           <option value="monte_carlo">Monte Carlo</option>
+          <option value="historical_sequence">Historical sequence (backtest)</option>
           <option value="historical_bootstrap">Historical bootstrap</option>
           <option value="deterministic">Deterministic expected returns</option>
         </select>
       </div>
       <div id="hist-note" style="display:none;font-size:11px;color:var(--muted);margin-bottom:10px;padding:8px;background:rgba(167,139,250,0.07);border-radius:6px;border:1px solid rgba(167,139,250,0.2)">
-        Bootstraps from 96 actual annual real returns. Return sliders ignored for equity. Captures fat tails and real crash frequency.
+        Uses actual 1928–2024 real returns for stocks <em>and</em> bonds (index-aligned by year). <strong>Sequence</strong> replays each historical start year in order (a true backtest); <strong>bootstrap</strong> resamples years at random. The return, volatility, bond, and inflation sliders are ignored here — Monte Carlo uses those sliders instead, so survival can differ between engines.
       </div>
       <div id="mc-sliders">
         <div class="control-group">

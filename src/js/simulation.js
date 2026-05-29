@@ -28,6 +28,7 @@ function strategyLabel(value) {
 function methodLabel(value) {
   const labels = {
     monte_carlo: 'Monte Carlo',
+    historical_sequence: 'Historical sequence',
     historical_bootstrap: 'Historical bootstrap',
     deterministic: 'Deterministic',
   };
@@ -81,7 +82,7 @@ function retirementCoreSpending(c, y, income, portfolio, baseRetSpend, previousC
   return clamp(core, floor, ceiling);
 }
 
-function simulateOne(c, gauss) {
+function simulateOne(c, draw) {
   let portfolio = c.portfolioTotal;
   const path = [];
   let previousRetirementCore = null;
@@ -155,11 +156,14 @@ function simulateOne(c, gauss) {
 
     // ── Portfolio return ─────────────────────────────────────────────────────
     const eqFrac  = bothRet ? c.equityFractionRetired : c.equityFractionWorking;
-    const eqRet   = gauss(c.equityReturnReal, c.equityStd);  // real; gauss handles MC vs historical
-    const portRet = eqFrac * eqRet + (1 - eqFrac) * c.bondReturnReal;
+    const { eqReal, bondReal } = draw(c.equityReturnReal, c.equityStd, c.bondReturnReal);
+    const portRet = eqFrac * eqReal + (1 - eqFrac) * bondReal;
     previousPortfolioReturn = portRet;
 
-    portfolio = Math.max(portfolio * (1 + portRet) + income - spending, 0);
+    // Start-of-year cash flows, then growth (standard backtest convention):
+    // withdraw spending (net of income) up front; depletion = can't fund the year.
+    const afterFlows = portfolio + income - spending;
+    portfolio = afterFlows > 0 ? afterFlows * (1 + portRet) : 0;
 
     path.push({ year: y + 1, age: ageN, ageT, portfolio, income, spending,
                 savings: income - spending, retired: bothRet, retirementBase,
@@ -186,19 +190,30 @@ function pct(arr, p) {
 }
 
 function runMonteCarlo(c, options = {}) {
-  // Resolve nominal → real returns once before simulation
+  // Resolve nominal → real returns once before simulation. Historical modes draw
+  // straight from the dataset, so equity mean is only used for the median path.
   const method = c.simulationMethod ?? 'monte_carlo';
-  const eqReal   = method === 'historical_bootstrap' ? HIST_EQ_MEAN : (c.equityReturnNominal - c.inflation);
+  const useHist  = method === 'historical_bootstrap' || method === 'historical_sequence';
+  const eqReal   = useHist ? HIST_EQ_MEAN : (c.equityReturnNominal - c.inflation);
   const bdReal   = c.bondReturnNominal - c.inflation;
   const rc = { ...c, equityReturnReal: eqReal, bondReturnReal: bdReal };
 
-  const detRng = (mu) => mu;  // always returns expected value for median path
-  const medianPath = simulateOne(rc, detRng);
+  const medianPath = simulateOne(rc, detGauss);  // expected-value path for the median line
   const allPaths = method === 'deterministic' ? [medianPath] : [];
-  const runCount = Math.max(1, Math.round(options.mcRuns ?? rc.mcRuns));
-  for (let i = 0; i < runCount && method !== 'deterministic'; i++) {
-    const rng = method === 'historical_bootstrap' ? makeHistRng(i * 997 + 42) : makeGauss(i * 997 + 42);
-    allPaths.push(simulateOne(rc, rng));
+
+  if (method === 'historical_sequence') {
+    // One path per valid historical start year (overlapping windows). This is the
+    // sequential historical backtest and matches the cohort chart's survival number.
+    const lastStart = Math.max(0, HIST_EQ_RETURNS.length - c.years);
+    for (let s = 0; s <= lastStart; s++) {
+      allPaths.push(simulateOne(rc, makeHistoricalSequenceRng(s)));
+    }
+  } else if (method !== 'deterministic') {
+    const runCount = Math.max(1, Math.round(options.mcRuns ?? rc.mcRuns));
+    for (let i = 0; i < runCount; i++) {
+      const rng = method === 'historical_bootstrap' ? makeHistRng(i * 997 + 42) : makeGauss(i * 997 + 42);
+      allPaths.push(simulateOne(rc, rng));
+    }
   }
 
   const survive = allPaths.filter(p => p[p.length - 1].portfolio > 0).length / allPaths.length;
